@@ -1,121 +1,377 @@
-<!DOCTYPE html>
+<!-- Run with a local server (for example, `npx serve .`) because the Earth textures load over the network. -->
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AEGIS — Planetary Sensor Shell | Team HELIOS-01</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A0F24" />
+  <meta name="description" content="AEGIS connects citizen-science observers into a continuous planetary mesh for atmospheric and celestial tracking." />
+  <title>AEGIS — A living planetary mesh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/earth.css" />
   <style>
-    body { margin: 0; background: #050811; color: #e2e8f0; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; }
-    header { text-align: center; padding: 24px 16px 8px; max-width: 760px; }
-    h1 { margin: 0; font-size: 2rem; letter-spacing: 0.08em; color: #38bdf8; }
-    p.sub { color: #94a3b8; margin: 6px 0 16px; }
-    .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
-    button { background: #0f172a; color: #38bdf8; border: 1px solid #38bdf8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    button:hover { background: #38bdf8; color: #050811; }
-    canvas { border: 1px solid #1e293b; border-radius: 12px; background: radial-gradient(circle at center, #0b132b 0%, #050811 75%); max-width: 95vw; }
-    .status { margin: 12px 0 24px; font-size: 0.95rem; color: #fbbf24; }
+    :root{color-scheme:dark;--ink:#f5f7ff;--muted:#b8c4e0;--soft:#7e8cae;--cyan:#38bdf8;--amber:#f5a524;--line:rgba(206,225,255,.12);--glass:rgba(20,27,58,.68)}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0a0f24;color:var(--ink)}body{font-family:Inter,system-ui,sans-serif;overflow-x:hidden}button,input{font:inherit}button{color:inherit}.space{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 82% 13%,rgba(16,111,154,.14),transparent 34%),radial-gradient(ellipse at 55% 82%,rgba(21,45,107,.22),transparent 45%),#0a0f24}.space:before,.space:after{content:"";position:absolute;inset:-20%;background-image:radial-gradient(1px 1px at 9% 13%,#b8dfff 60%,transparent),radial-gradient(1px 1px at 45% 27%,#fff 60%,transparent),radial-gradient(1px 1px at 82% 64%,#8fdcff 60%,transparent),radial-gradient(1px 1px at 71% 16%,#fff 60%,transparent),radial-gradient(1px 1px at 20% 81%,#fff 60%,transparent),radial-gradient(1px 1px at 93% 40%,#b8dfff 60%,transparent),radial-gradient(1px 1px at 35% 52%,#fff 60%,transparent);background-size:420px 360px;opacity:.38;animation:drift 90s linear infinite}.space:after{background-size:610px 510px;opacity:.2;animation-duration:140s;animation-direction:reverse}@keyframes drift{to{transform:translate3d(3%,-2%,0)}}.page{position:relative;z-index:1;min-height:100svh;display:grid;grid-template-columns:minmax(410px,45%) minmax(0,55%);max-width:1600px;margin:auto;padding:0 4.3vw}.copy{display:flex;flex-direction:column;justify-content:center;padding:72px 2.4vw 56px 0;position:relative;z-index:2}.eyebrow,.micro{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}.eyebrow{color:var(--amber);display:flex;gap:10px;align-items:center}.eyebrow:before{content:"";width:24px;height:1px;background:var(--amber)}h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(78px,11vw,150px);line-height:.84;letter-spacing:-.075em;margin:26px 0 22px}.lede{color:var(--muted);font-size:15px;line-height:1.8;max-width:445px;margin:0 0 31px}.search-wrap{max-width:570px;position:relative}.searchbar{display:flex;align-items:center;gap:11px;padding:8px 8px 8px 17px;border:1px solid rgba(186,223,255,.19);border-radius:16px;background:var(--glass);backdrop-filter:blur(16px);box-shadow:0 10px 45px rgba(0,0,0,.16);transition:border-color .2s,box-shadow .2s}.searchbar:focus-within{border-color:rgba(56,189,248,.75);box-shadow:0 0 0 3px rgba(56,189,248,.12),0 12px 46px rgba(0,0,0,.24)}.search-icon{width:19px;height:19px;flex:none;color:#9fb2d4}.searchbar input{min-width:0;flex:1;background:transparent;border:0;outline:0;color:var(--ink);font-size:13px}.searchbar input::placeholder{color:#8b99b8}.search-btn{border:0;border-radius:10px;background:var(--amber);color:#171522;font-size:12px;font-weight:700;padding:12px 19px;cursor:pointer;transition:transform .2s,background .2s}.search-btn:hover{background:#ffc15a;transform:translateY(-1px)}.search-btn:focus-visible,.chip:focus-visible,.reset:focus-visible,.copy-coords:focus-visible,.suggestion:focus-visible{outline:2px solid #fff;outline-offset:3px}.keyhint{font-size:10px;color:#95a4c3;white-space:nowrap}.suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:8;padding:6px;border:1px solid var(--line);border-radius:14px;background:rgba(14,21,47,.96);backdrop-filter:blur(20px);box-shadow:0 20px 50px #030713a8;display:none}.suggestions.open{display:block}.suggestion{width:100%;border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:9px;cursor:pointer}.suggestion:hover,.suggestion.active{background:rgba(56,189,248,.12)}.suggestion strong{display:block;font-size:12px;font-weight:600}.suggestion small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.suggestion-note{padding:9px 12px;color:var(--muted);font-size:11px}.quick-label{font-size:10px;letter-spacing:.12em;color:#8997b5;text-transform:uppercase;margin:17px 0 10px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid rgba(190,213,255,.16);background:rgba(255,255,255,.025);color:#c7d4ed;border-radius:99px;padding:8px 12px;font-size:10px;cursor:pointer;transition:all .2s}.chip:hover{border-color:rgba(56,189,248,.55);color:#fff;background:rgba(56,189,248,.08)}.inline-message{min-height:18px;color:#ffd28a;font-size:11px;margin:12px 0 0}.specs{max-width:570px;margin-top:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,rgba(22,31,66,.72),rgba(13,21,47,.75));backdrop-filter:blur(16px);padding:17px 18px 14px;opacity:0;transform:translateY(15px);pointer-events:none;transition:opacity .5s,transform .5s}.specs.visible{opacity:1;transform:translateY(0);pointer-events:auto}.spec-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.spec-head h2{font-size:16px;margin:0 0 7px;font-weight:600;letter-spacing:-.02em}.coords{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:7px}.copy-coords{border:0;background:transparent;color:var(--cyan);font-size:10px;padding:2px 4px;cursor:pointer}.reset{border:1px solid rgba(190,213,255,.2);background:rgba(255,255,255,.035);border-radius:8px;padding:7px 9px;color:#d3def3;font-size:10px;cursor:pointer;white-space:nowrap}.reset:hover{border-color:var(--cyan)}.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.tile{border:1px solid rgba(195,215,255,.08);border-radius:10px;background:rgba(255,255,255,.025);padding:10px 10px 9px;min-height:61px;animation:rise .45s both;animation-delay:calc(var(--i)*55ms)}@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.tile .label{display:block;font-size:9px;color:#9daac7;margin-bottom:6px;letter-spacing:.04em}.tile .value{display:block;font-size:12px;font-weight:600;color:#f5f7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile .value.accent{color:var(--amber)}.skeleton{display:inline-block;width:65%;height:10px;border-radius:8px;background:linear-gradient(90deg,#263252,#3a4765,#263252);background-size:200% 100%;animation:shimmer 1.4s infinite}@keyframes shimmer{to{background-position:-200% 0}}.dayline{color:#b8c4e0;font-size:10px;margin:12px 1px 0}.data-note{font-size:9px;color:#8290ad;margin:9px 1px 0}.globe-side{position:relative;min-height:100vh;display:grid;place-items:center;overflow:visible}.globe-shell{position:absolute;width:min(67vw,940px);aspect-ratio:1;right:-11%;top:50%;transform:translateY(-50%);filter:drop-shadow(0 0 44px rgba(23,144,195,.13))}.globe-shell:after{content:"";position:absolute;inset:8%;border-radius:50%;pointer-events:none;box-shadow:inset -32px -14px 70px rgba(245,165,36,.035),0 0 68px rgba(56,189,248,.1)}#globeViz{width:100%;height:100%}#globeViz canvas{display:block;outline:none}.globe-badge{position:absolute;bottom:9%;right:4%;display:flex;align-items:center;gap:10px;border:1px solid rgba(190,213,255,.12);border-radius:99px;background:rgba(14,21,46,.62);backdrop-filter:blur(12px);padding:9px 13px;color:#b9c6df;font-size:9px;letter-spacing:.12em;text-transform:uppercase}.live-dot{width:6px;height:6px;border-radius:50%;background:#65e0bd;box-shadow:0 0 10px #65e0bd}.brand-mark{position:absolute;left:0;top:29px;color:#8090b2;font-size:10px;letter-spacing:.12em}.brand-mark strong{color:var(--ink);font-weight:600}.result-live{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.mobile-title{display:none}
+    @media(max-width:1050px){.page{grid-template-columns:minmax(370px,48%) minmax(0,52%);padding:0 3vw}.copy{padding-right:1vw}.globe-shell{width:76vw;right:-28%}h1{font-size:clamp(82px,12vw,132px)}.lede{font-size:14px}}
+    @media(max-width:760px){.page{display:flex;flex-direction:column;padding:0 20px}.globe-side{order:0;min-height:45svh;height:45svh;margin:0 -20px;overflow:hidden}.globe-shell{width:min(106vw,540px);right:50%;top:52%;transform:translate(50%,-50%)}.globe-badge{right:6%;bottom:5%;font-size:8px}.brand-mark{left:22px;top:18px}.copy{order:1;padding:10px 0 35px;justify-content:flex-start}.eyebrow{font-size:9px}h1{display:none}.mobile-title{display:block;font-family:Fraunces,Georgia,serif;font-size:72px;line-height:.9;letter-spacing:-.07em;margin:4px 0 12px}.lede{font-size:13px;line-height:1.7;margin-bottom:21px;max-width:520px}.searchbar{gap:9px;padding-left:13px}.searchbar input{font-size:12px}.search-btn{padding:11px 13px}.keyhint{display:none}.specs{margin-top:14px;padding:14px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.spec-head h2{font-size:15px}}
+    @media(max-width:380px){.tiles{gap:5px}.tile{padding:9px 8px}.chip{padding:7px 10px}.search-icon{display:none}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.space:before,.space:after{animation:none!important}}
+  </style>
+  <style>
+    .searchbar,.specs,.globe-badge{border:1px solid rgba(190,219,255,.18);background:linear-gradient(145deg,rgba(29,43,78,.68),rgba(10,17,39,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 52px rgba(1,5,18,.24);backdrop-filter:saturate(145%) blur(20px);-webkit-backdrop-filter:saturate(145%) blur(20px)}
+    .tile{border:1px solid rgba(190,219,255,.13);background:linear-gradient(145deg,rgba(30,43,76,.56),rgba(11,18,42,.7));box-shadow:inset 0 1px 0 rgba(255,255,255,.045);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+    .globe-badge{border-radius:999px}
   </style>
 </head>
 <body>
-  <header>
-    <h1>AEGIS PLANETARY MESH</h1>
-    <p class="sub">Team HELIOS-01 · 4-Day Rolling Celestial Shell & Dynamic Cloud Failover Simulator</p>
-    <div class="controls">
-      <button onclick="simulateCloudStorm()">Simulate Regional Cloud Obstruction</button>
-      <button onclick="resetMesh()">Restore Clear-Sky Mesh</button>
-    </div>
-  </header>
-  <canvas id="shellCanvas" width="720" height="440"></canvas>
-  <div class="status" id="statusText">Mesh Status: 12/12 Ground Nodes Active · 4-Day Celestial Shell Integrity: 99.4%</div>
+  <div class="space" aria-hidden="true"></div>
+  <main class="page">
+    <section class="copy" aria-labelledby="hero-title">
+      <div class="eyebrow">NASA Space Apps Challenge · Team HELIOS-01</div>
+      <h1 id="hero-title">AEGIS</h1>
+      <p class="mobile-title" aria-hidden="true">AEGIS</p>
+      <p class="lede">A decentralized citizen-science mesh for continuous atmospheric and celestial tracking.</p>
+      <div class="search-wrap">
+        <form class="searchbar" id="searchForm" role="search">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <label for="placeSearch" class="result-live">Search a city, observatory, or place</label>
+          <input id="placeSearch" autocomplete="off" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false" placeholder="Search a city, observatory, or place..." />
+          <span class="keyhint" aria-hidden="true">↵</span>
+          <button class="search-btn" type="submit">Search</button>
+        </form>
+        <div class="suggestions" id="suggestions" role="listbox" aria-label="Place suggestions"></div>
+      </div>
+      <div class="quick-label">Explore a location</div>
+      <div class="chips" id="quickPicks" aria-label="Quick pick locations"></div>
+      <p class="inline-message" id="message" role="status" aria-live="polite"></p>
+      <section class="specs" id="specsCard" aria-label="Location telemetry" aria-live="polite">
+        <div class="spec-head"><div><h2 id="placeTitle">Location</h2><div class="coords"><span id="coordinates">—</span><button class="copy-coords" id="copyCoordinates" type="button" aria-label="Copy coordinates">Copy</button></div></div><button class="reset" id="resetView" type="button">Reset view</button></div>
+        <div class="tiles" id="tiles"></div>
+        <p class="dayline" id="dayline">Local daylight: <span>n/a</span></p>
+        <p class="data-note">Data: OpenStreetMap, Open-Meteo · Moon phase calculated locally</p>
+      </section>
+      <span class="result-live" id="announcement" aria-live="polite"></span>
+    </section>
+    <section class="globe-side" aria-label="Interactive Earth visualization">
+      <div class="brand-mark"><strong>AEGIS</strong> &nbsp;/&nbsp; PLANETARY OBSERVATORY</div>
+      <div class="globe-shell"><div id="globeViz" aria-label="Interactive Earth. Drag to rotate." role="img"></div></div>
+      <div class="globe-badge"><span class="live-dot"></span> Global sensor mesh <span aria-hidden="true">·</span> 24/7</div>
+      <p class="imagery-credit">Earth imagery: NASA Blue Marble · clouds: EUMETSAT / Clouds Live</p>
+    </section>
+  </main>
+<script type="module" src="./assets/js/nav.js"></script>
+<script type="module" src="./assets/js/stars.js"></script>
+<script type="module">
+  const CONFIG = {
+    colors: { background: '#0A0F24', cyan: '#38BDF8', amber: '#F5A524' },
+    rotationDegreesPerSecond: 0.4,
+    animationMs: 2000,
+    searchDebounceMs: 1000,
+    globe: './assets/images/earth-blue-marble.jpg',
+    night: './assets/images/earth-night.jpg',
+    bump: './assets/images/earth-topology.png',
+    clouds: './assets/images/clouds-alpha.png',
+    nominatim: 'https://nominatim.openstreetmap.org/search',
+    weather: 'https://api.open-meteo.com/v1/forecast'
+  };
+  const FALLBACKS = [
+    { name:'Tokyo', region:'Tokyo', country:'Japan', lat:35.6762, lng:139.6503, elevation:40, timezone:'Asia/Tokyo' },
+    { name:'New York', region:'New York', country:'United States', lat:40.7128, lng:-74.006, elevation:10, timezone:'America/New_York' },
+    { name:'Reykjavik', region:'Capital Region', country:'Iceland', lat:64.1466, lng:-21.9426, elevation:20, timezone:'Atlantic/Reykjavik' },
+    { name:'Bengaluru', region:'Karnataka', country:'India', lat:12.9716, lng:77.5946, elevation:920, timezone:'Asia/Kolkata' },
+    { name:'Cairo', region:'Cairo Governorate', country:'Egypt', lat:30.0444, lng:31.2357, elevation:23, timezone:'Africa/Cairo' },
+    { name:'Rio de Janeiro', region:'Rio de Janeiro', country:'Brazil', lat:-22.9068, lng:-43.1729, elevation:2, timezone:'America/Sao_Paulo' },
+    { name:'Sydney', region:'New South Wales', country:'Australia', lat:-33.8688, lng:151.2093, elevation:58, timezone:'Australia/Sydney' },
+    { name:'Cape Town', region:'Western Cape', country:'South Africa', lat:-33.9249, lng:18.4241, elevation:25, timezone:'Africa/Johannesburg' },
+    { name:'Atacama Desert', region:'Antofagasta', country:'Chile', lat:-23.8634, lng:-69.1328, elevation:2400, timezone:'America/Santiago' }
+  ];
+  const QUICK = ['Bengaluru','Tokyo','Reykjavik','Atacama Desert'];
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (selector) => document.querySelector(selector);
+  const input = $('#placeSearch'), suggestionBox = $('#suggestions'), message = $('#message'), card = $('#specsCard');
+  const searchForm = $('#searchForm'), quickPicks = $('#quickPicks');
+  let Globe, gsap, globe, selected = null, cache = new Map(), searchTimer, activeIndex = -1, lastRequestAt = 0, dragTimer, localTicker;
+  let autoRotate = !reducedMotion, renderFrame = 0;
 
-  <script>
-    const canvas = document.getElementById('shellCanvas');
-    const ctx = canvas.getContext('2d');
-    const cx = canvas.width / 2, cy = canvas.height / 2;
-    const earthR = 75, shellR = 165;
-    let angle = 0;
-    let nodes = Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      theta: (i / 12) * Math.PI * 2,
-      clouded: false
-    }));
+  const esc = (text) => String(text ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const formatCoord = (value, positive, negative) => `${Math.abs(value).toFixed(4)}° ${value >= 0 ? positive : negative}`;
+  const titleFor = (place) => [place.name, place.region && place.region !== place.name ? place.region : '', place.country].filter(Boolean).join(', ');
 
-    function simulateCloudStorm() {
-      nodes.forEach((n, idx) => n.clouded = (idx === 1 || idx === 2 || idx === 7));
-      document.getElementById('statusText').innerText =
-        "Cloud Alert (MODIS > 35%): Nodes #2, #3, #8 bypassed -> Neighboring dark-sky nodes routing coverage (Shell Integrity: 98.1%)";
-    }
+  function tile(label, value, icon, i, accent = false) {
+    return `<div class="tile" style="--i:${i}"><span class="label">${icon} &nbsp; ${label}</span><span class="value${accent ? ' accent' : ''}">${value}</span></div>`;
+  }
+  function skeletonTiles() {
+    const labels = [['Local time','◷'],['Elevation','⌁'],['Temperature','☼'],['Cloud cover','◌'],['Sunrise','↑'],['Sunset','↓'],['Moon phase','◔'],['Illumination','◕']];
+    $('#tiles').innerHTML = labels.map(([label, icon], i) => tile(label, '<span class="skeleton" aria-label="Loading"></span>', icon, i)).join('');
+  }
+  function moonInfo(date = new Date()) {
+    const cycle = 29.530588853;
+    const knownNewMoon = Date.UTC(2000,0,6,18,14);
+    const age = ((date.getTime() - knownNewMoon) / 86400000 % cycle + cycle) % cycle;
+    const illumination = Math.round((1 - Math.cos(2 * Math.PI * age / cycle)) * 50);
+    const names = ['New moon','Waxing crescent','First quarter','Waxing gibbous','Full moon','Waning gibbous','Last quarter','Waning crescent'];
+    return { name: names[Math.round(age / cycle * 8) % 8], illumination };
+  }
+  function updateClock() {
+    if (!selected) return;
+    const now = new Date();
+    const time = selected.timezone ? new Intl.DateTimeFormat('en', { timeZone:selected.timezone, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).format(now) : 'n/a';
+    const clockTile = $('#tiles .tile:first-child .value');
+    if (clockTile) clockTile.textContent = time;
+    const sunriseAt = selected.sunrise ? Date.parse(selected.sunrise) : NaN;
+    const sunsetAt = selected.sunset ? Date.parse(selected.sunset) : NaN;
+    const isDay = Number.isFinite(sunriseAt) && Number.isFinite(sunsetAt) ? now.getTime() >= sunriseAt && now.getTime() < sunsetAt : null;
+    $('#dayline').innerHTML = `Local daylight: <span>${isDay === null ? 'n/a' : isDay ? 'Daytime' : 'Nighttime'}</span>`;
+  }
+  function paintTelemetry(place, data = {}) {
+    const moon = moonInfo();
+    const v = data.current || {};
+    const temperature = Number.isFinite(v.temperature_2m) ? `${Math.round(v.temperature_2m)}°C` : 'n/a';
+    const cloud = Number.isFinite(v.cloud_cover) ? `${Math.round(v.cloud_cover)}% · ${v.cloud_cover < 25 ? 'clear' : v.cloud_cover < 70 ? 'partly cloudy' : 'overcast'}` : 'n/a';
+    const elevation = Number.isFinite(data.elevation?.[0]) ? `${Math.round(data.elevation[0])} m` : Number.isFinite(place.elevation) ? `${place.elevation} m` : 'n/a';
+    const sunrise = data.daily?.sunrise?.[0] ? new Date(data.daily.sunrise[0]).toLocaleTimeString('en', { timeZone:place.timezone, hour:'2-digit', minute:'2-digit', hour12:false }) : 'n/a';
+    const sunset = data.daily?.sunset?.[0] ? new Date(data.daily.sunset[0]).toLocaleTimeString('en', { timeZone:place.timezone, hour:'2-digit', minute:'2-digit', hour12:false }) : 'n/a';
+    $('#tiles').innerHTML = [
+      tile('Local time','—','◷',0,true), tile('Elevation',elevation,'⌁',1), tile('Temperature',temperature,'☼',2,true), tile('Cloud cover',cloud,'◌',3), tile('Sunrise',sunrise,'↑',4), tile('Sunset',sunset,'↓',5), tile('Moon phase',moon.name,'◔',6), tile('Illumination',`${moon.illumination}%`,'◕',7)
+    ].join('');
+    updateClock();
+    clearInterval(localTicker); localTicker = setInterval(updateClock, 1000);
+  }
+  async function loadTelemetry(place) {
+    skeletonTiles();
+    const params = new URLSearchParams({ latitude:place.lat, longitude:place.lng, current:'temperature_2m,cloud_cover', daily:'sunrise,sunset', timezone:'auto', forecast_days:'1' });
+    const [weather, elevation] = await Promise.allSettled([
+      fetch(`${CONFIG.weather}?${params}`).then((r) => { if (!r.ok) throw new Error('weather unavailable'); return r.json(); }),
+      fetch(`https://api.open-meteo.com/v1/elevation?latitude=${place.lat}&longitude=${place.lng}`).then((r) => { if (!r.ok) throw new Error('elevation unavailable'); return r.json(); })
+    ]);
+    const weatherData = weather.status === 'fulfilled' ? weather.value : {};
+    if (weatherData.timezone) place.timezone = weatherData.timezone;
+    place.sunrise = weatherData.daily?.sunrise?.[0] || null;
+    place.sunset = weatherData.daily?.sunset?.[0] || null;
+    if (elevation.status === 'fulfilled') weatherData.elevation = elevation.value.elevation;
+    if (weather.status === 'rejected' && elevation.status === 'rejected') message.textContent = 'Live telemetry is temporarily unavailable; the globe and location remain available.';
+    paintTelemetry(place, weatherData);
+  }
+  function setSuggestions(items, note = '') {
+    activeIndex = -1;
+    suggestionBox.innerHTML = items.map((place, i) => `<button class="suggestion" type="button" role="option" aria-selected="false" data-index="${i}"><strong>${esc(place.name)}</strong><small>${esc([place.region,place.country].filter(Boolean).join(', '))}</small></button>`).join('') + (note ? `<div class="suggestion-note">${esc(note)}</div>` : '');
+    suggestionBox.classList.toggle('open', items.length > 0 || Boolean(note));
+    input.setAttribute('aria-expanded', String(items.length > 0));
+    suggestionBox.querySelectorAll('.suggestion').forEach((button) => button.addEventListener('click', () => choose(items[Number(button.dataset.index)])));
+  }
+  function closeSuggestions() { suggestionBox.classList.remove('open'); input.setAttribute('aria-expanded','false'); activeIndex = -1; }
+  function exactFallback(query) {
+    const q = query.trim().toLowerCase();
+    return FALLBACKS.find((p) => p.name.toLowerCase() === q || `${p.name}, ${p.country}`.toLowerCase() === q);
+  }
+  async function geocode(query) {
+    const exact = exactFallback(query);
+    if (exact) return [exact];
+    const key = query.trim().toLowerCase();
+    if (cache.has(key)) return cache.get(key);
+    const delay = Math.max(0, CONFIG.searchDebounceMs - (Date.now() - lastRequestAt));
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    lastRequestAt = Date.now();
+    const params = new URLSearchParams({ q:query, format:'jsonv2', addressdetails:'1', limit:'6' });
+    // Browsers supply their normal User-Agent and same-origin referrer policy; User-Agent cannot be overridden from a web page.
+    const response = await fetch(`${CONFIG.nominatim}?${params}`, { headers:{ Accept:'application/json' }, referrerPolicy:'strict-origin-when-cross-origin' });
+    if (!response.ok) throw new Error('Place search is temporarily unavailable. Try a quick pick or search again.');
+    const results = await response.json();
+    const places = results.slice(0,6).map((item) => {
+      const a = item.address || {};
+      const name = item.name || a.city || a.town || a.village || query;
+      return { name, region:a.state || a.county || a.region || '', country:a.country || '', lat:Number(item.lat), lng:Number(item.lon), timezone:null, elevation:null, displayName:item.display_name };
+    });
+    cache.set(key, places);
+    return places;
+  }
+  async function suggest(query) {
+    clearTimeout(searchTimer);
+    const value = query.trim();
+    if (value.length < 2) { closeSuggestions(); return; }
+    const exact = exactFallback(value);
+    if (exact) { setSuggestions([exact]); return; }
+    searchTimer = setTimeout(async () => {
+      setSuggestions([], 'Searching the place index…');
+      try { const places = await geocode(value); setSuggestions(places, places.length ? '' : 'No places found. Try a nearby city.'); }
+      catch (error) { setSuggestions([], error.message); }
+    }, 380);
+  }
+  function animateTo(place) {
+    const controls = globe.controls();
+    controls.autoRotate = false;
+    autoRotate = false;
+    globe.ringsData([{ lat:place.lat, lng:place.lng, maxR:3.5, propagationSpeed:1.8, repeatPeriod:1000, color:CONFIG.colors.cyan }]);
+    globe.pointsData([{ lat:place.lat, lng:place.lng, size:.3, color:CONFIG.colors.amber }]);
+    globe.labelsData([{ lat:place.lat, lng:place.lng, text:place.name, color:'#F5F7FF', size:1.1 }]);
+    if (reducedMotion) { globe.pointOfView({ lat:place.lat, lng:place.lng, altitude:.72 }, 0); return Promise.resolve(); }
+    const from = globe.pointOfView();
+    const proxy = { lat:from.lat, lng:from.lng, altitude:Math.max(from.altitude,1.8) };
+    const deltaLng = ((place.lng - from.lng + 540) % 360) - 180;
+    return new Promise((resolve) => {
+      const route = gsap.timeline({ onUpdate:() => globe.pointOfView(proxy, 0), onComplete:resolve });
+      if (Math.abs(deltaLng) > 110) {
+        route.to(proxy, { lat:place.lat * .48 + from.lat * .52, lng:from.lng + deltaLng * .48, altitude:2.05, duration:.55, ease:'power2.in' });
+        route.to(proxy, { lat:place.lat, lng:from.lng + deltaLng, altitude:.72, duration:1.45, ease:'power2.out' });
+      } else {
+        route.to(proxy, { lat:place.lat, lng:from.lng + deltaLng, altitude:.72, duration:CONFIG.animationMs/1000, ease:'power2.inOut' });
+      }
+    });
+  }
+  async function choose(place) {
+    if (!place) return;
+    if (!globe) { message.textContent = 'Earth is still initializing. Please try again in a moment.'; return; }
+    closeSuggestions(); input.value = place.name; message.textContent = ''; selected = place; clearInterval(localTicker);
+    $('#placeTitle').textContent = titleFor(place);
+    $('#coordinates').textContent = `${formatCoord(place.lat,'N','S')}, ${formatCoord(place.lng,'E','W')}`;
+    card.classList.remove('visible');
+    skeletonTiles();
+    await Promise.all([animateTo(place), loadTelemetry(place)]);
+    card.classList.add('visible');
+    $('#announcement').textContent = `Showing planetary telemetry for ${titleFor(place)}.`;
+  }
+  function reset() {
+    selected = null; clearInterval(localTicker); card.classList.remove('visible'); closeSuggestions(); input.value = ''; message.textContent = ''; $('#tiles').innerHTML = ''; $('#dayline').innerHTML = 'Local daylight: <span>n/a</span>';
+    globe.pointsData([]).ringsData([]).labelsData([]).pointOfView({ lat:12, lng:-82, altitude:2.15 }, CONFIG.animationMs);
+    if (!reducedMotion) { autoRotate = true; globe.controls().autoRotate = true; }
+  }
 
-    function resetMesh() {
-      nodes.forEach(n => n.clouded = false);
-      document.getElementById('statusText').innerText =
-        "Mesh Status: 12/12 Ground Nodes Active · 4-Day Celestial Shell Integrity: 99.4%";
-    }
+  QUICK.forEach((name) => { const place = FALLBACKS.find((p) => p.name === name); const button = document.createElement('button'); button.type = 'button'; button.className = 'chip'; button.textContent = name; button.addEventListener('click', () => choose(place)); quickPicks.append(button); });
+  input.addEventListener('input', () => suggest(input.value));
+  searchForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (!query) { input.focus(); return; }
+    message.textContent = '';
+    try {
+      const places = await geocode(query);
+      if (!places.length) { message.textContent = "We couldn't find that place. Try a nearby city."; closeSuggestions(); return; }
+      if (places.length > 1 && !exactFallback(query)) setSuggestions(places); else choose(places[0]);
+    } catch (error) { message.textContent = error.message || 'Search is unavailable right now. Quick picks are still ready.'; }
+  });
+  input.addEventListener('keydown', (event) => {
+    const options = [...suggestionBox.querySelectorAll('.suggestion')];
+    if (event.key === 'ArrowDown' && options.length) { event.preventDefault(); activeIndex = (activeIndex + 1) % options.length; options.forEach((o,i) => { o.classList.toggle('active',i===activeIndex); o.setAttribute('aria-selected',String(i===activeIndex)); }); options[activeIndex].scrollIntoView({ block:'nearest' }); }
+    else if (event.key === 'ArrowUp' && options.length) { event.preventDefault(); activeIndex = (activeIndex - 1 + options.length) % options.length; options.forEach((o,i) => { o.classList.toggle('active',i===activeIndex); o.setAttribute('aria-selected',String(i===activeIndex)); }); options[activeIndex].scrollIntoView({ block:'nearest' }); }
+    else if (event.key === 'Enter' && activeIndex >= 0 && options[activeIndex]) { event.preventDefault(); options[activeIndex].click(); }
+    else if (event.key === 'Escape') closeSuggestions();
+  });
+  document.addEventListener('click', (event) => { if (!event.target.closest('.search-wrap')) closeSuggestions(); });
+  $('#resetView').addEventListener('click', reset);
+  $('#copyCoordinates').addEventListener('click', async () => { if (!selected) return; try { await navigator.clipboard.writeText(`${selected.lat}, ${selected.lng}`); $('#copyCoordinates').textContent='Copied'; setTimeout(() => $('#copyCoordinates').textContent='Copy',1300); } catch { message.textContent='Clipboard access is unavailable in this browser.'; } });
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      angle += 0.004;
+  try {
+    const [globeModule, gsapModule, THREE] = await Promise.all([
+      import('https://esm.sh/globe.gl@2.46.2'),
+      import('https://esm.sh/gsap@3.14.2'),
+      import('https://esm.sh/three@%3E=0.179%20%3C1?target=es2022')
+    ]);
+    Globe = globeModule.default; gsap = gsapModule.gsap || gsapModule.default;
+    const textureLoader = new THREE.TextureLoader();
+    const loadTexture = (url) => new Promise((resolve, reject) => textureLoader.load(url, resolve, undefined, reject));
+    const [dayTexture, nightTexture, bumpTexture, cloudTexture] = await Promise.all([
+      loadTexture(CONFIG.globe), loadTexture(CONFIG.night), loadTexture(CONFIG.bump), loadTexture(CONFIG.clouds)
+    ]);
+    dayTexture.colorSpace = THREE.SRGBColorSpace;
+    nightTexture.colorSpace = THREE.SRGBColorSpace;
+    cloudTexture.colorSpace = THREE.SRGBColorSpace;
+    const surfaceMaterial = new THREE.MeshPhongMaterial({
+      map:dayTexture,
+      bumpMap:bumpTexture,
+      bumpScale:2.2,
+      color:0xffffff,
+      shininess:8,
+      specular:new THREE.Color(0x254c6d)
+    });
+    surfaceMaterial.onBeforeCompile = (shader) => {
+      shader.uniforms.uAegisNightMap = { value:nightTexture };
+      shader.uniforms.uAegisSunDirection = { value:new THREE.Vector3(-1, .25, .14).normalize() };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vAegisWorldNormal;')
+        .replace('#include <normal_vertex>', '#include <normal_vertex>\nvAegisWorldNormal = normalize(mat3(modelMatrix) * objectNormal);');
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform sampler2D uAegisNightMap;\nuniform vec3 uAegisSunDirection;\nvarying vec3 vAegisWorldNormal;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          float aegisDaylight = smoothstep(-0.2, 0.12, dot(normalize(vAegisWorldNormal), normalize(uAegisSunDirection)));
+          vec3 aegisNightLights = texture2D(uAegisNightMap, vMapUv).rgb;
+          totalEmissiveRadiance += aegisNightLights * (1.0 - aegisDaylight) * 1.35;`);
+    };
+    surfaceMaterial.customProgramCacheKey = () => 'aegis-blue-marble-day-night-v1';
 
-      // Outer 4-day celestial shell ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, shellR, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    const host = $('#globeViz');
+    globe = Globe({ animateIn:true, waitForGlobeReady:true })(host)
+      .globeMaterial(surfaceMaterial)
+      .backgroundColor('rgba(0,0,0,0)')
+      .showAtmosphere(true).atmosphereColor('#78caff').atmosphereAltitude(.13)
+      .pointsData([]).pointLat('lat').pointLng('lng').pointAltitude(.008).pointRadius('size').pointColor('color')
+      .ringsData([]).ringLat('lat').ringLng('lng').ringMaxRadius('maxR').ringPropagationSpeed('propagationSpeed').ringRepeatPeriod('repeatPeriod').ringColor('color')
+      .labelsData([]).labelLat('lat').labelLng('lng').labelText('text').labelColor('color').labelSize('size').labelDotRadius(.12).labelAltitude(.02);
+    globe.width(host.clientWidth).height(host.clientHeight).showGraticules(false);
+    const renderer = globe.renderer();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
+    const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    [dayTexture, nightTexture, bumpTexture, cloudTexture].forEach((texture) => { texture.anisotropy = anisotropy; });
 
-      // Earth core
-      ctx.beginPath();
-      ctx.arc(cx, cy, earthR, 0, Math.PI * 2);
-      ctx.fillStyle = '#0f294a';
-      ctx.fill();
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    const ambientLight = new THREE.AmbientLight(0xb7cce5, .46);
+    const sunlight = new THREE.DirectionalLight(0xfff5e4, 1.65);
+    sunlight.position.set(-150, 38, 21);
+    const cloudMaterial = new THREE.MeshPhongMaterial({
+      map:cloudTexture,
+      color:0xffffff,
+      transparent:true,
+      opacity:.68,
+      depthWrite:false,
+      shininess:1
+    });
+    const cloudLayer = new THREE.Mesh(new THREE.SphereGeometry(100.72, 96, 96), cloudMaterial);
+    cloudLayer.renderOrder = 2;
+    globe.scene().add(ambientLight, sunlight, cloudLayer);
 
-      nodes.forEach((n, i) => {
-        const a = n.theta + angle;
-        const gx = cx + Math.cos(a) * earthR;
-        const gy = cy + Math.sin(a) * earthR;
-        const sx = cx + Math.cos(a) * shellR;
-        const sy = cy + Math.sin(a) * shellR;
+    const controls = globe.controls();
+    controls.enableDamping = true;
+    controls.dampingFactor = .08;
+    controls.minDistance = 130;
+    controls.maxDistance = 520;
+    controls.autoRotate = autoRotate;
+    controls.autoRotateSpeed = .016;
+    controls.enablePan = false;
+    globe.pointOfView({ lat:12, lng:-82, altitude:2.15 }, 0);
+    host.addEventListener('pointerdown', () => { controls.autoRotate = false; clearTimeout(dragTimer); });
+    host.addEventListener('pointerup', () => { clearTimeout(dragTimer); dragTimer = setTimeout(() => { if (!selected && !reducedMotion) { controls.autoRotate = true; autoRotate = true; } }, 4000); });
+    const resize = new ResizeObserver(() => { const box = host.getBoundingClientRect(); globe.width(box.width).height(box.height); });
+    resize.observe(host);
+    const canvas = host.querySelector('canvas');
+    if (canvas) { canvas.setAttribute('aria-hidden','true'); canvas.style.touchAction='pan-y'; }
 
-        // Observation beam or neighbor failover arc
-        ctx.beginPath();
-        if (!n.clouded) {
-          ctx.moveTo(gx, gy);
-          ctx.lineTo(sx, sy);
-          ctx.strokeStyle = 'rgba(251, 191, 36, 0.55)';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        } else {
-          // Route from adjacent clear neighbor
-          const neighbor = nodes[(i + 1) % nodes.length];
-          const na = neighbor.theta + angle;
-          ctx.moveTo(cx + Math.cos(na) * earthR, cy + Math.sin(na) * earthR);
-          ctx.lineTo(sx, sy);
-          ctx.strokeStyle = '#38bdf8';
-          ctx.setLineDash([4, 4]);
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-
-        // Ground node dot
-        ctx.beginPath();
-        ctx.arc(gx, gy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = n.clouded ? '#ef4444' : '#fbbf24';
-        ctx.fill();
-
-        // Celestial shell node dot
-        ctx.beginPath();
-        ctx.arc(sx, sy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = '#38bdf8';
-        ctx.fill();
-      });
-
-      requestAnimationFrame(draw);
-    }
-    draw();
-  </script>
+    let cloudFrame = 0;
+    let previousCloudFrame = 0;
+    const animateCloudLayer = (time) => {
+      if (previousCloudFrame && !document.hidden) cloudLayer.rotation.y += (time - previousCloudFrame) * 0.000000035;
+      previousCloudFrame = time;
+      cloudFrame = requestAnimationFrame(animateCloudLayer);
+    };
+    if (!reducedMotion) cloudFrame = requestAnimationFrame(animateCloudLayer);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(renderFrame);
+        cancelAnimationFrame(cloudFrame);
+        globe.pauseAnimation?.();
+      } else {
+        globe.resumeAnimation?.();
+        if (!reducedMotion) { previousCloudFrame = 0; cloudFrame = requestAnimationFrame(animateCloudLayer); }
+      }
+    });
+  } catch (error) {
+    console.error('AEGIS globe initialization failed', error);
+    $('#globeViz').innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;color:#9fb2d4;font:12px Inter,sans-serif;text-align:center;padding:20%">The Earth visualization could not load. Location search and telemetry remain available.</div>';
+    message.textContent = '3D assets are unavailable right now; location search and telemetry remain available.';
+  }
+</script>
 </body>
 </html>

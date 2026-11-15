@@ -1,0 +1,2 @@
+.imagery-credit{position:absolute;right:4.5%;bottom:1.4%;z-index:2;margin:0;color:rgba(200,215,239,.58);font:500 8px/1.4 Inter,system-ui,sans-serif;letter-spacing:.04em;text-align:right;pointer-events:none}
+@media(max-width:760px){.imagery-credit{right:22px;bottom:1.2%;max-width:70%;font-size:7px}}

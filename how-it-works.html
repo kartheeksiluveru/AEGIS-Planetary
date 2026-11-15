@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A0F24" />
+  <meta name="description" content="Explore the AEGIS zero-hardware observation mesh, its rolling window, and its validation flow." />
+  <title>How AEGIS Works — AEGIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/how-it-works.css" />
+</head>
+<body>
+  <canvas class="aegis-pipeline-canvas" aria-hidden="true"></canvas>
+  <div class="aegis-pipeline-fallback" aria-hidden="true">
+    <div class="pipeline-earth"><span class="earth-longitude"></span><span class="earth-latitude"></span></div>
+    <span class="pipeline-orbit orbit-a"></span><span class="pipeline-orbit orbit-b"></span><span class="pipeline-orbit orbit-c"></span>
+    <span class="pipeline-node node-a"></span><span class="pipeline-node node-b"></span><span class="pipeline-node node-c"></span>
+    <span class="pipeline-data data-a"></span><span class="pipeline-data data-b"></span><span class="pipeline-data data-c"></span>
+  </div>
+  <main class="aegis-content how-page">
+    <header class="how-hero" id="top">
+      <p class="section-eyebrow">ARCHITECTURE</p>
+      <h1>How AEGIS Works</h1>
+      <p class="intro">A zero-hardware mesh turns observations from existing sky-watchers into a shared, time-aware view of the night sky. Each participant keeps their current setup; AEGIS coordinates, checks, and combines eligible observations.</p>
+      <a class="hero-link" href="#pipeline">Explore the pipeline <span aria-hidden="true">↓</span></a>
+      <div class="hero-orbit" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="orbit-core"></span><span class="orbit-point"></span></div>
+    </header>
+
+    <div class="how-layout">
+      <div class="how-sections">
+        <section class="how-section" id="pipeline" aria-labelledby="pipeline-title">
+          <div class="section-heading"><p class="section-eyebrow">01 / Observation pipeline</p><h2 id="pipeline-title">From local frame to shared context</h2><p>Four straightforward stages connect independent observations without requiring a new sensor network.</p></div>
+          <div class="pipeline-grid">
+            <article class="pipeline-card glass" id="step-capture">
+              <span class="step-index">01</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M10 18h7l3-5h9l3 5h6v18H10z" stroke="currentColor" stroke-width="1.6"/><circle cx="24" cy="27" r="6" stroke="currentColor" stroke-width="1.6"/><path d="M36 13v-4M40 17l3-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+              <h3>Local capture</h3><p>An existing telescope or sky camera records a frame at its own site. A participant can contribute with equipment they already use; AEGIS does not imply a new hardware installation.</p><div class="mini-visual capture-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><i></i></div>
+            </article>
+            <article class="pipeline-card glass" id="step-trend">
+              <span class="step-index">02</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M8 34h32M11 29l8-9 6 5 12-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="37" cy="11" r="3" fill="currentColor"/></svg></div>
+              <h3>Trend detection</h3><p>Frame metadata and observations can be compared over time to surface changes worth reviewing. A trend is a signal for further checking, not proof of a discovery by itself.</p><div class="mini-visual trend-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><i></i></div>
+            </article>
+            <article class="pipeline-card glass" id="step-align">
+              <span class="step-index">03</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="currentColor" stroke-width="1.5"/><path d="M24 7v34M7 24h34M14 14l20 20M34 14 14 34" stroke="currentColor" stroke-width="1" opacity=".65"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg></div>
+              <h3>Coordinate alignment</h3><p>Plate-solving maps a frame onto shared celestial coordinates, so observations from different locations can be compared in the same reference system. Alignment quality still needs to be checked before combining data.</p><div class="mini-visual align-visual" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+            </article>
+            <article class="pipeline-card glass" id="step-merge">
+              <span class="step-index">04</span><div class="step-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M11 17a15 15 0 0 1 26-4l3 4M40 17h-8M37 31a15 15 0 0 1-26 4l-3-4M8 31h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 16v16M16 24h16" stroke="currentColor" stroke-width="1.1" opacity=".65"/></svg></div>
+              <h3>4-day sliding window</h3><p>Eligible observations are merged across a rolling four-day window to balance freshness with opportunities for coverage. As a new day enters, the oldest slice rolls out.</p><div class="mini-visual merge-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><i></i></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="how-section" id="window" aria-labelledby="window-title">
+          <div class="section-heading"><p class="section-eyebrow">02 / Time in motion</p><h2 id="window-title">A window that keeps moving</h2><p>Step through a simplified four-day merge. The dates and counts are illustrative demo values, not live observation data.</p></div>
+          <div class="window-panel glass">
+            <div class="window-topline"><div><span class="panel-label">ROLLING WINDOW</span><p class="window-date" id="window-date">Observation day 1</p></div><span class="window-badge"><i></i> 4 slices in view</span></div>
+            <div class="window-visual" aria-label="Four daily slices merge into one celestial shell">
+              <div class="day-tiles" id="day-tiles">
+                <div class="day-tile"><span class="tile-day">Day −3</span><strong class="tile-date"></strong><span class="tile-count"></span><div class="tile-stars" aria-hidden="true"></div></div>
+                <div class="day-tile"><span class="tile-day">Day −2</span><strong class="tile-date"></strong><span class="tile-count"></span><div class="tile-stars" aria-hidden="true"></div></div>
+                <div class="day-tile"><span class="tile-day">Day −1</span><strong class="tile-date"></strong><span class="tile-count"></span><div class="tile-stars" aria-hidden="true"></div></div>
+                <div class="day-tile today-tile"><span class="tile-day">Today</span><strong class="tile-date"></strong><span class="tile-count"></span><div class="tile-stars" aria-hidden="true"></div></div>
+              </div>
+              <div class="merge-connector" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              <div class="shell-tile"><div class="shell-graphic" aria-hidden="true"><span class="shell-ring ring-a"></span><span class="shell-ring ring-b"></span><span class="shell-ring ring-c"></span><i></i></div><span class="panel-label">MERGED SHELL</span><strong id="shell-count">—</strong><small>illustrative accepted frames</small></div>
+            </div>
+            <div class="window-controls">
+              <div class="window-buttons"><button class="btn-ghost" id="window-play" type="button" aria-label="Play rolling window">Play</button><button class="btn-ghost step-button" id="window-previous" type="button" aria-label="Show previous window step">Previous</button><button class="btn-ghost step-button" id="window-next" type="button" aria-label="Show next window step">Next day</button></div>
+              <label class="scrubber-label" for="window-scrubber"><span>Scrub the timeline</span><output id="scrubber-output" for="window-scrubber">1 / 8</output></label>
+              <input id="window-scrubber" type="range" min="0" max="7" value="0" aria-label="Rolling window day" />
+              <p class="window-note" id="window-status" aria-live="polite">The current window contains four daily slices.</p>
+            </div>
+          </div>
+          <p class="motion-note" id="motion-note" hidden>Reduced motion is enabled. Use Previous and Next day to step through the window.</p>
+        </section>
+
+        <section class="how-section" id="validation" aria-labelledby="validation-title">
+          <div class="section-heading"><p class="section-eyebrow">03 / Quality checks</p><h2 id="validation-title">A NASA-informed validation loop</h2><p>Adjust the sample inputs to see how cloud rejection and light-radiance weighting affect this simplified demo decision.</p></div>
+          <div class="validation-panel glass">
+            <div class="validation-flow" aria-label="Frame validation flow">
+              <div class="flow-step"><span class="flow-number">01</span><strong>Frame</strong><small>Candidate observation</small></div><span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-step"><span class="flow-number">02</span><strong>MODIS check</strong><small>Cloud fraction</small></div><span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-step"><span class="flow-number">03</span><strong>VIIRS weighting</strong><small>Light radiance</small></div><span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-outcomes"><div class="outcome accepted-outcome" id="accepted-step"><strong>Accepted into window</strong></div><div class="outcome rejected-outcome" id="rejected-step"><strong>Rejected</strong></div></div>
+            </div>
+            <div class="validation-controls">
+              <div class="slider-control"><label for="cloud-slider">MODIS cloud fraction <output id="cloud-value" for="cloud-slider">22%</output></label><input id="cloud-slider" type="range" min="0" max="70" value="22" /><div class="slider-scale"><span>Clear · 0%</span><span>Reject above 35%</span></div></div>
+              <div class="slider-control"><label for="radiance-slider">VIIRS radiance <output id="radiance-value" for="radiance-slider">38 units</output></label><input id="radiance-slider" type="range" min="0" max="120" value="38" /><div class="slider-scale"><span>Lower radiance</span><span>Demo glare limit · 75</span></div></div>
+            </div>
+            <div class="verdict-card" id="verdict-card" aria-live="polite" aria-atomic="true"><div><span class="verdict-kicker">SAMPLE VERDICT</span><strong id="verdict">Accepted</strong></div><div class="weight-result"><span>Illustrative weight</span><strong id="weight">75%</strong></div><p id="reason">Within both demo thresholds; this simplified VIIRS mapping gives lower radiance a higher weight.</p></div>
+            <p class="disclaimer">Demo logic only: the shared accept/reject rule uses cloud &gt; 35% and radiance &gt; 75. The displayed weight is illustrative, not a calibrated science product. No live NASA feed is queried here.</p>
+          </div>
+        </section>
+
+        <section class="how-section" id="failover" aria-labelledby="failover-title">
+          <div class="section-heading"><p class="section-eyebrow">04 / Neighbor resilience</p><h2 id="failover-title">When one view is obscured</h2><p>Choose a node to simulate local cloud cover. The nearest clear neighbor expands its coverage in this conceptual map.</p></div>
+          <div class="failover-panel glass">
+            <div class="failover-heading"><span class="panel-label">ILLUSTRATIVE NODE MAP</span><button class="btn-ghost" id="failover-reset" type="button">Reset</button></div>
+            <div class="map-wrap"><svg class="node-map" viewBox="0 0 640 340" role="group" aria-labelledby="map-title map-description">
+              <title id="map-title">Interactive AEGIS neighbor failover map</title><desc id="map-description">Six connected observation nodes. Select one to mark it clouded out and route its coverage to the nearest clear neighbor.</desc>
+              <g class="map-links" aria-hidden="true"><path d="M92 95 202 66 322 122 448 71 550 177 436 263 322 122 202 66 182 242 322 122 436 263 550 177" /></g>
+              <g class="network-node" data-node="0" role="button" tabindex="0" aria-label="Node 01, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="92" cy="95" r="35"/><circle class="node-hit" cx="92" cy="95" r="20"/><circle class="node-dot" cx="92" cy="95" r="6"/><text x="92" y="133">01</text></g>
+              <g class="network-node" data-node="1" role="button" tabindex="0" aria-label="Node 02, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="202" cy="66" r="35"/><circle class="node-hit" cx="202" cy="66" r="20"/><circle class="node-dot" cx="202" cy="66" r="6"/><text x="202" y="104">02</text></g>
+              <g class="network-node" data-node="2" role="button" tabindex="0" aria-label="Node 03, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="322" cy="122" r="35"/><circle class="node-hit" cx="322" cy="122" r="20"/><circle class="node-dot" cx="322" cy="122" r="6"/><text x="322" y="160">03</text></g>
+              <g class="network-node" data-node="3" role="button" tabindex="0" aria-label="Node 04, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="448" cy="71" r="35"/><circle class="node-hit" cx="448" cy="71" r="20"/><circle class="node-dot" cx="448" cy="71" r="6"/><text x="448" y="109">04</text></g>
+              <g class="network-node" data-node="4" role="button" tabindex="0" aria-label="Node 05, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="550" cy="177" r="35"/><circle class="node-hit" cx="550" cy="177" r="20"/><circle class="node-dot" cx="550" cy="177" r="6"/><text x="550" y="216">05</text></g>
+              <g class="network-node" data-node="5" role="button" tabindex="0" aria-label="Node 06, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="436" cy="263" r="35"/><circle class="node-hit" cx="436" cy="263" r="20"/><circle class="node-dot" cx="436" cy="263" r="6"/><text x="436" y="302">06</text></g>
+              <g class="network-node" data-node="6" role="button" tabindex="0" aria-label="Node 07, clear. Simulate cloud cover" aria-pressed="false"><circle class="coverage-ring" cx="182" cy="242" r="35"/><circle class="node-hit" cx="182" cy="242" r="20"/><circle class="node-dot" cx="182" cy="242" r="6"/><text x="182" y="281">07</text></g>
+            </svg></div>
+            <p class="failover-caption" id="failover-caption" aria-live="polite">All seven nodes are clear in this schematic. Select a node to simulate cloud cover.</p>
+          </div>
+        </section>
+
+        <section class="how-section" id="sources" aria-labelledby="sources-title">
+          <div class="section-heading"><p class="section-eyebrow">05 / Intended inputs</p><h2 id="sources-title">Built around open Earth data</h2><p>These are the intended real data inputs for a production system. This interactive page uses sample values and does not fetch NASA data.</p></div>
+          <div class="source-grid">
+            <article class="source-card glass"><div class="source-mark modis-mark" aria-hidden="true"><span></span><span></span><span></span></div><div><span class="source-label">CLOUD FRACTION</span><h3>NASA MODIS</h3><p>Cloud fraction can help identify frames that are too obscured for a useful observation.</p><a href="https://worldview.earthdata.nasa.gov" target="_blank" rel="noopener noreferrer">Explore NASA Worldview <span aria-hidden="true">↗</span></a></div></article>
+            <article class="source-card glass"><div class="source-mark viirs-mark" aria-hidden="true"><span></span><span></span><span></span></div><div><span class="source-label">NIGHTTIME LIGHTS</span><h3>NASA VIIRS / Black Marble</h3><p>Radiance can inform how strongly light pollution affects a candidate observation.</p><a href="https://blackmarble.gsfc.nasa.gov" target="_blank" rel="noopener noreferrer">Explore Black Marble <span aria-hidden="true">↗</span></a></div></article>
+          </div>
+        </section>
+
+        <section class="how-section faq-section" id="faq" aria-labelledby="faq-title">
+          <div class="section-heading"><p class="section-eyebrow">06 / Honest boundaries</p><h2 id="faq-title">Questions, answered plainly</h2><p>AEGIS is a project concept. The interactive checks below are not evidence of a deployed production network.</p></div>
+          <div class="faq-list">
+            <details class="faq-item glass"><summary>Why a 4-day window?</summary><p>It is a tunable design parameter intended to balance freshness against coverage. Four days is not a proven optimum; a production system would need to evaluate different windows against real observation quality and latency.</p></details>
+            <details class="faq-item glass"><summary>What if no nodes are clear?</summary><p>There may be no eligible observation for that region and time. A system should report the coverage gap or wait for clearer data rather than imply that a neighbor can always replace the missing view.</p></details>
+            <details class="faq-item glass"><summary>How are frames verified?</summary><p>This demo illustrates cloud and radiance checks using the same deterministic accept/reject rule as the project data module. A production pipeline would also need validated plate-solving, provenance, quality controls, and live data integration; this page does not perform those operations.</p></details>
+            <details class="faq-item glass"><summary>Do I need new hardware?</summary><p>The concept is designed around observations from equipment participants already have, such as a telescope or sky camera. It does not require new hardware in principle, although a real contribution flow would depend on supported equipment and data formats.</p></details>
+          </div>
+        </section>
+      </div>
+
+      <nav class="step-nav" aria-label="How it works sections">
+        <span class="panel-label">ON THIS PAGE</span>
+        <a href="#pipeline" aria-current="location">Pipeline</a><a href="#window">Rolling window</a><a href="#validation">NASA checks</a><a href="#failover">Neighbor failover</a><a href="#sources">Data sources</a><a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </main>
+  <script type="module" src="./assets/js/nav.js"></script>
+  <script type="module" src="./assets/js/stars.js"></script>
+  <script type="module" src="./assets/js/pipeline-background.js"></script>
+  <script type="module" src="./assets/js/how-it-works.js"></script>
+</body>
+</html>

@@ -4,21 +4,131 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A0F24" />
-  <meta name="description" content="Learn how an observer could join the AEGIS citizen-science mesh." />
-  <title>Join the mesh — AEGIS</title>
+  <meta name="description" content="Create a simulated AEGIS node profile for your backyard astronomy station." />
+  <title>Become a Node — AEGIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/register.css" />
 </head>
 <body>
-  <main class="aegis-content">
-    <p class="section-eyebrow">Observer network</p>
-    <h1>Join the mesh</h1>
-    <p class="intro">A future registration flow for backyard observers and astrophotography rigs. AEGIS is designed around existing equipment—no new hardware required.</p>
-    <section class="stub-panel glass" aria-labelledby="join-title"><h2 id="join-title">Your observing station</h2><p>This demo page is a placeholder. A production registration flow should explain what information is collected and request explicit consent before any station details are submitted.</p></section>
+  <main class="aegis-content register-page">
+    <header class="register-heading">
+      <p class="section-eyebrow">Join the mesh</p>
+      <h1>Become a Node</h1>
+      <p class="intro">Give your observing station a place in the planetary mesh. This is a local-only demo—nothing is uploaded or sent.</p>
+    </header>
+
+    <div class="registration-layout" id="registration-layout">
+      <form class="registration-form glass" id="registration-form" novalidate>
+        <ol class="progress-indicator" aria-label="Registration progress">
+          <li id="progress-identity"><a href="#identity"><span>01</span> Identity</a></li>
+          <li id="progress-location"><a href="#location"><span>02</span> Location</a></li>
+          <li id="progress-equipment"><a href="#equipment"><span>03</span> Equipment</a></li>
+        </ol>
+
+        <section class="form-section" id="identity" aria-labelledby="identity-title">
+          <div class="form-section-heading"><span>01</span><div><h2 id="identity-title">Identity</h2><p>Choose the name your station will use across the mesh.</p></div></div>
+          <div class="form-fields two-up">
+            <div class="field-block">
+              <label for="callsign">Callsign <span aria-hidden="true">*</span></label>
+              <input class="input" id="callsign" name="callsign" type="text" minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" autocomplete="nickname" placeholder="LYRA_07" aria-describedby="callsign-help callsign-error" required />
+              <small class="field-help" id="callsign-help">3–16 letters, numbers, or underscores. Must be unique.</small>
+              <p class="field-error" id="callsign-error" hidden></p>
+            </div>
+            <div class="field-block">
+              <label for="email">Email <span aria-hidden="true">*</span></label>
+              <input class="input" id="email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com" aria-describedby="email-help email-error" required />
+              <small class="field-help" id="email-help">Used only in this browser demo profile.</small>
+              <p class="field-error" id="email-error" hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section" id="location" aria-labelledby="location-title">
+          <div class="form-section-heading"><span>02</span><div><h2 id="location-title">Location</h2><p>Help the mesh understand where your sky is.</p></div></div>
+          <div class="form-fields two-up">
+            <div class="field-block">
+              <label for="sector">Regional sector <span aria-hidden="true">*</span></label>
+              <select class="input" id="sector" name="sector" aria-describedby="sector-error" required>
+                <option value="">Choose a sector</option>
+                <option value="South India">South India</option>
+                <option value="Atacama">Atacama</option>
+                <option value="Central Alps">Central Alps</option>
+                <option value="Canary Islands">Canary Islands</option>
+                <option value="Namibia">Namibia</option>
+                <option value="Australian Outback">Australian Outback</option>
+                <option value="Hawaii">Hawaii</option>
+                <option value="__propose__">Propose a new sector</option>
+              </select>
+              <p class="field-error" id="sector-error" hidden></p>
+            </div>
+            <div class="field-block proposed-sector-field" id="proposed-sector-field" hidden>
+              <label for="proposed-sector">Proposed sector name <span aria-hidden="true">*</span></label>
+              <input class="input" id="proposed-sector" name="proposed-sector" type="text" maxlength="40" placeholder="e.g. Sierra Nevada" aria-describedby="proposed-sector-error" />
+              <p class="field-error" id="proposed-sector-error" hidden></p>
+            </div>
+            <div class="field-block town-field">
+              <label for="town">Nearest town <span aria-hidden="true">*</span></label>
+              <div class="field-with-action"><input class="input" id="town" name="town" type="text" maxlength="80" autocomplete="address-level2" placeholder="Town or city" aria-describedby="town-error location-message" required /><button class="location-button" id="use-location" type="button">Use my location</button></div>
+              <p class="field-error" id="town-error" hidden></p>
+              <p class="location-message" id="location-message" role="status" aria-live="polite"></p>
+            </div>
+            <div class="field-block">
+              <div class="field-label-row"><label for="bortle">Self-reported Bortle class <span aria-hidden="true">*</span></label><span class="help-wrap"><button class="help-trigger" type="button" aria-label="What is the Bortle scale?" aria-describedby="bortle-tooltip">?</button><span class="help-tooltip" id="bortle-tooltip" role="tooltip">A 1–9 scale for night-sky darkness. Class 1 is exceptionally dark; class 9 is bright inner-city sky.</span></span></div>
+              <select class="input" id="bortle" name="bortle" aria-describedby="bortle-error" required>
+                <option value="">Choose a class</option>
+                <option value="1">1 · Excellent dark sky</option><option value="2">2 · Truly dark</option><option value="3">3 · Rural sky</option><option value="4">4 · Rural / suburban</option><option value="5">5 · Suburban sky</option><option value="6">6 · Bright suburban</option><option value="7">7 · Suburban / urban</option><option value="8">8 · City sky</option><option value="9">9 · Inner-city sky</option>
+              </select>
+              <p class="field-error" id="bortle-error" hidden></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section" id="equipment" aria-labelledby="equipment-title">
+          <div class="form-section-heading"><span>03</span><div><h2 id="equipment-title">Equipment &amp; sample frames</h2><p>Tell us what your station uses on a typical night.</p></div></div>
+          <div class="form-fields two-up">
+            <div class="field-block"><label for="camera">Camera <span aria-hidden="true">*</span></label><input class="input" id="camera" name="camera" type="text" maxlength="80" placeholder="Cooled CMOS, DSLR…" aria-describedby="camera-error" required /><p class="field-error" id="camera-error" hidden></p></div>
+            <div class="field-block"><label for="telescope">Telescope or lens <span aria-hidden="true">*</span></label><input class="input" id="telescope" name="telescope" type="text" maxlength="100" placeholder="80 mm refractor, 135 mm lens…" aria-describedby="telescope-error" required /><p class="field-error" id="telescope-error" hidden></p></div>
+            <div class="field-block"><label for="mount">Mount <span aria-hidden="true">*</span></label><select class="input" id="mount" name="mount" aria-describedby="mount-error" required><option value="">Choose a mount</option><option value="Tracking">Tracking</option><option value="Fixed">Fixed</option></select><p class="field-error" id="mount-error" hidden></p></div>
+            <div class="field-block"><label for="filter">Filter <span class="optional-label">Optional</span></label><input class="input" id="filter" name="filter" type="text" maxlength="80" placeholder="Broadband, Ha, none…" /></div>
+            <div class="field-block exposure-field"><label for="exposure">Typical exposure <span aria-hidden="true">*</span></label><div class="input-with-unit"><input class="input" id="exposure" name="exposure" type="number" min="1" max="3600" step="1" inputmode="numeric" placeholder="120" aria-describedby="exposure-error" required /><span>seconds</span></div><p class="field-error" id="exposure-error" hidden></p></div>
+          </div>
+
+          <div class="sample-upload">
+            <div class="sample-upload-heading"><div><h3>Sample frames</h3><p>Optional · up to 3 files, 10 MB each. Files stay on this device.</p></div><span class="upload-count" id="upload-count">0 / 3</span></div>
+            <label class="sample-dropzone" id="sample-dropzone" for="sample-frames"><input class="visually-hidden" id="sample-frames" type="file" accept=".jpg,.jpeg,.png,.fit,.fits,.cr2,.cr3,.nef,.arw,.dng,.raf,.orf,.rw2,.pef,.srw,.x3f" multiple aria-describedby="sample-help sample-error" /><span class="upload-icon" aria-hidden="true">+</span><span><strong>Choose sample frames</strong><small id="sample-help">or drag and drop JPG, PNG, FITS, or common RAW files</small></span></label>
+            <p class="field-error" id="sample-error" hidden></p>
+            <div class="sample-file-list" id="sample-file-list" aria-live="polite"></div>
+          </div>
+
+          <div class="consent-field"><input id="consent" name="consent" type="checkbox" aria-describedby="consent-error" required /><label for="consent">My callsign and frame metadata can appear publicly on the leaderboard and feed.</label><p class="field-error" id="consent-error" hidden></p></div>
+        </section>
+
+        <div class="form-footer"><p class="demo-note"><span aria-hidden="true">i</span> Demo: nothing is uploaded or sent.</p><button class="btn-primary submit-button" id="submit-registration" type="submit" disabled>Create my demo node</button></div>
+      </form>
+
+      <aside class="node-preview glass" aria-labelledby="preview-title">
+        <p class="section-eyebrow">Live preview</p>
+        <h2 id="preview-title">Node ID card</h2>
+        <div class="node-card-art">
+          <div class="node-card-top"><span>AEGIS · HELIOS-01</span><span class="node-orbit-mark" aria-hidden="true">◉</span></div>
+          <div class="node-card-main"><span class="preview-label">CALLSIGN</span><strong id="preview-callsign">YOUR CALLSIGN</strong><span class="preview-sector" id="preview-sector">Select a regional sector</span></div>
+          <div class="node-card-footer"><span class="preview-label">NODE ID</span><strong id="preview-node-id">HEL-NEW-0000</strong></div>
+        </div>
+        <div class="sector-status-row"><span class="status-indicator" id="sector-status-indicator"></span><span id="preview-sector-status">Sector status: awaiting selection</span></div>
+        <div class="preview-details"><p class="preview-label">EQUIPMENT PROFILE</p><p id="preview-equipment">Your camera and optics will appear here.</p><p class="preview-label">LOCATION</p><p id="preview-location">Your observing site will appear here.</p></div>
+        <p class="preview-disclosure">This card is a local demo preview. Your details are not sent to a server.</p>
+      </aside>
+    </div>
+
+    <section class="registration-success glass" id="registration-success" hidden aria-labelledby="success-title" role="status" aria-live="polite">
+      <span class="success-mark" aria-hidden="true">✓</span><p class="section-eyebrow">Node created locally</p><h2 id="success-title" tabindex="-1">Welcome to the mesh.</h2><p>Your demo node ID is <strong id="success-node-id"></strong>. This profile exists only in this browser.</p><p class="demo-note"><span aria-hidden="true">i</span> Demo: nothing is uploaded or sent.</p><a class="btn-primary" href="./leaderboard.html">View the leaderboard</a>
+    </section>
   </main>
   <script type="module" src="./assets/js/nav.js"></script>
   <script type="module" src="./assets/js/stars.js"></script>
+  <script type="module" src="./assets/js/register.js"></script>
 </body>
 </html>

@@ -1,0 +1,23 @@
+.your-node-panel{max-width:760px;margin-top:28px;padding:clamp(18px,3vw,26px)}
+.your-node-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.your-node-heading .section-eyebrow{margin-bottom:5px;font-size:8px}
+.your-node-heading h2{margin:0;font-size:27px}
+.you-badge{color:#ffd28a;border-color:rgba(245,165,36,.36);background:rgba(245,165,36,.09);text-transform:uppercase;letter-spacing:.1em}
+.you-badge[hidden],.your-node-empty[hidden],.your-node-card[hidden]{display:none}
+.your-node-empty,.leaderboard-honesty,.leaderboard-method{margin:0;color:var(--aegis-muted);font:400 11px/1.8 var(--aegis-font-ui)}
+.your-node-empty a{color:#8edaff;text-underline-offset:3px}
+.your-node-empty a:hover{color:#c5f0ff}
+.your-node-card{display:grid;gap:18px;border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:16px;background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(255,255,255,.02) 60%)}
+.your-node-identity{display:flex;align-items:center;gap:11px}
+.node-avatar{display:grid;width:39px;height:39px;flex:none;place-items:center;border:1px solid rgba(56,189,248,.3);border-radius:12px;background:rgba(56,189,248,.1);color:#a7e7ff;font:700 11px var(--aegis-font-ui);letter-spacing:.08em}
+.your-node-identity strong,.your-node-identity div span{display:block}
+.your-node-identity strong{color:var(--aegis-text);font:600 19px var(--aegis-font-display)}
+.your-node-identity div span{margin-top:3px;color:#f0ca82;font:700 9px var(--aegis-font-ui);letter-spacing:.1em}
+.your-node-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;margin:0;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+.your-node-details div{min-width:0}
+.your-node-details dt{margin-bottom:4px;color:#8797b3;font:700 8px var(--aegis-font-ui);letter-spacing:.12em;text-transform:uppercase}
+.your-node-details dd{overflow-wrap:anywhere;margin:0;color:#dce5f4;font:500 10px/1.6 var(--aegis-font-ui)}
+.leaderboard-honesty{margin-top:15px}
+.leaderboard-honesty strong{color:#ffd28a}
+.leaderboard-method{margin-top:8px;color:#8492b1;font-size:9px}
+@media(max-width:480px){.your-node-details{grid-template-columns:1fr}.your-node-panel{padding:16px}}

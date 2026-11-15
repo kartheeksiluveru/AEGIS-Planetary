@@ -4,21 +4,51 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A0F24" />
-  <meta name="description" content="Explore the AEGIS simulated observation submissions." />
-  <title>Submissions — AEGIS</title>
+  <meta name="description" content="Browse searchable simulated AEGIS astrophotography submissions from the planetary mesh." />
+  <title>Frames from the Mesh — AEGIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/submissions.css" />
 </head>
 <body>
-  <main class="aegis-content">
-    <p class="section-eyebrow">Observation archive</p>
-    <h1>Submissions</h1>
-    <p class="intro">A future home for the rolling observation queue, frame previews, and quality review. Every record in this prototype is generated demo data, not a real observation.</p>
-    <section class="stub-panel glass" aria-labelledby="archive-title"><h2 id="archive-title">The four-day window</h2><p>When submissions are connected, the archive will show how new frames enter the window and how the oldest slice rolls out. MODIS cloud fraction and VIIRS radiance will be shown as simulated quality signals.</p></section>
+  <main class="aegis-content submissions-page">
+    <header class="submissions-heading">
+      <p class="section-eyebrow">Global image submissions</p>
+      <h1>Frames from the Mesh</h1>
+      <p class="intro">A rolling view of simulated sky frames across the AEGIS mesh.</p>
+    </header>
+
+    <section class="submission-toolbar glass" aria-label="Filter image submissions">
+      <div class="toolbar-top">
+        <label class="search-field"><span class="visually-hidden">Search by callsign, sector, or equipment</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg><input class="input" id="frame-search" type="search" placeholder="Search callsign, sector, equipment" autocomplete="off" /></label>
+        <label class="select-field"><span>Status</span><select class="input" id="status-filter"><option value="all">All statuses</option><option value="accepted">Accepted</option><option value="rejected-cloud">Rejected: cloud</option><option value="rejected-glare">Rejected: glare</option></select></label>
+        <label class="select-field"><span>Sort</span><select class="input" id="sort-filter"><option value="newest">Newest</option><option value="clearest">Clearest</option><option value="lowest-radiance">Lowest light pollution</option></select></label>
+      </div>
+      <div class="sector-filter-wrap"><span class="filter-label">Sector</span><div class="sector-filters" id="sector-filters" role="group" aria-label="Filter by sector"></div></div>
+    </section>
+
+    <p class="result-count" id="result-count" role="status" aria-live="polite" aria-atomic="true">Showing demo frames</p>
+    <section class="submission-grid" id="submission-grid" aria-label="Simulated astrophotography frames">
+      <div class="submission-skeleton glass" aria-hidden="true"><div class="skeleton-image skeleton"></div><div class="skeleton-line skeleton"></div><div class="skeleton-line short skeleton"></div></div>
+      <div class="submission-skeleton glass" aria-hidden="true"><div class="skeleton-image skeleton"></div><div class="skeleton-line skeleton"></div><div class="skeleton-line short skeleton"></div></div>
+      <div class="submission-skeleton glass" aria-hidden="true"><div class="skeleton-image skeleton"></div><div class="skeleton-line skeleton"></div><div class="skeleton-line short skeleton"></div></div>
+    </section>
+    <div class="load-more-wrap"><button class="btn-ghost" id="load-more" type="button" hidden>Load more frames</button></div>
+    <section class="empty-state glass" id="empty-state" hidden aria-labelledby="empty-title"><h2 id="empty-title">No frames match those filters</h2><p>Try a different search or clear the filters to see all simulated frames.</p><button class="btn-primary" id="clear-filters" type="button">Clear filters</button></section>
   </main>
+
+  <dialog class="frame-dialog" id="frame-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-shell">
+      <div class="dialog-topline"><p class="section-eyebrow">Simulated observation frame</p><button class="dialog-close" id="dialog-close" type="button" aria-label="Close frame details">×</button></div>
+      <div class="dialog-frame-wrap"><canvas class="dialog-canvas" id="dialog-canvas" aria-hidden="true"></canvas><div class="dialog-controls"><button type="button" id="frame-previous" aria-label="Previous frame">←</button><button type="button" id="frame-next" aria-label="Next frame">→</button></div></div>
+      <div class="dialog-content"><div class="dialog-title-row"><div><h2 id="dialog-title"></h2><p class="dialog-subtitle" id="dialog-subtitle"></p></div><span class="badge" id="dialog-status"></span></div><dl class="metadata-grid" id="dialog-metadata"></dl><p class="quality-explanation" id="quality-explanation"></p></div>
+    </div>
+  </dialog>
+
   <script type="module" src="./assets/js/nav.js"></script>
   <script type="module" src="./assets/js/stars.js"></script>
+  <script type="module" src="./assets/js/submissions.js"></script>
 </body>
 </html>

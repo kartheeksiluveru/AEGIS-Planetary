@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEGIS — Planetary Sensor Shell | Team HELIOS-01</title>
+  <style>
+    body { margin: 0; background: #050811; color: #e2e8f0; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; }
+    header { text-align: center; padding: 24px 16px 8px; max-width: 760px; }
+    h1 { margin: 0; font-size: 2rem; letter-spacing: 0.08em; color: #38bdf8; }
+    p.sub { color: #94a3b8; margin: 6px 0 16px; }
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+    button { background: #0f172a; color: #38bdf8; border: 1px solid #38bdf8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    button:hover { background: #38bdf8; color: #050811; }
+    canvas { border: 1px solid #1e293b; border-radius: 12px; background: radial-gradient(circle at center, #0b132b 0%, #050811 75%); max-width: 95vw; }
+    .status { margin: 12px 0 24px; font-size: 0.95rem; color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AEGIS PLANETARY MESH</h1>
+    <p class="sub">Team HELIOS-01 · 4-Day Rolling Celestial Shell & Dynamic Cloud Failover Simulator</p>
+    <div class="controls">
+      <button onclick="simulateCloudStorm()">Simulate Regional Cloud Obstruction</button>
+      <button onclick="resetMesh()">Restore Clear-Sky Mesh</button>
+    </div>
+  </header>
+  <canvas id="shellCanvas" width="720" height="440"></canvas>
+  <div class="status" id="statusText">Mesh Status: 12/12 Ground Nodes Active · 4-Day Celestial Shell Integrity: 99.4%</div>
+
+  <script>
+    const canvas = document.getElementById('shellCanvas');
+    const ctx = canvas.getContext('2d');
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const earthR = 75, shellR = 165;
+    let angle = 0;
+    let nodes = Array.from({ length: 12 }, (_, i) => ({
+      id: i,
+      theta: (i / 12) * Math.PI * 2,
+      clouded: false
+    }));
+
+    function simulateCloudStorm() {
+      nodes.forEach((n, idx) => n.clouded = (idx === 1 || idx === 2 || idx === 7));
+      document.getElementById('statusText').innerText =
+        "Cloud Alert (MODIS > 35%): Nodes #2, #3, #8 bypassed -> Neighboring dark-sky nodes routing coverage (Shell Integrity: 98.1%)";
+    }
+
+    function resetMesh() {
+      nodes.forEach(n => n.clouded = false);
+      document.getElementById('statusText').innerText =
+        "Mesh Status: 12/12 Ground Nodes Active · 4-Day Celestial Shell Integrity: 99.4%";
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      angle += 0.004;
+
+      // Outer 4-day celestial shell ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, shellR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Earth core
+      ctx.beginPath();
+      ctx.arc(cx, cy, earthR, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f294a';
+      ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      nodes.forEach((n, i) => {
+        const a = n.theta + angle;
+        const gx = cx + Math.cos(a) * earthR;
+        const gy = cy + Math.sin(a) * earthR;
+        const sx = cx + Math.cos(a) * shellR;
+        const sy = cy + Math.sin(a) * shellR;
+
+        // Observation beam or neighbor failover arc
+        ctx.beginPath();
+        if (!n.clouded) {
+          ctx.moveTo(gx, gy);
+          ctx.lineTo(sx, sy);
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.55)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        } else {
+          // Route from adjacent clear neighbor
+          const neighbor = nodes[(i + 1) % nodes.length];
+          const na = neighbor.theta + angle;
+          ctx.moveTo(cx + Math.cos(na) * earthR, cy + Math.sin(na) * earthR);
+          ctx.lineTo(sx, sy);
+          ctx.strokeStyle = '#38bdf8';
+          ctx.setLineDash([4, 4]);
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Ground node dot
+        ctx.beginPath();
+        ctx.arc(gx, gy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = n.clouded ? '#ef4444' : '#fbbf24';
+        ctx.fill();
+
+        // Celestial shell node dot
+        ctx.beginPath();
+        ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fill();
+      });
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>

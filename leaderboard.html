@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A0F24" />
-  <meta name="description" content="Explore the AEGIS simulated observer leaderboard." />
-  <title>Leaderboard — AEGIS</title>
+  <meta name="description" content="Explore simulated AEGIS node rankings, streaks, clarity scores, and mesh coverage." />
+  <title>Top Nodes of the Mesh — AEGIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -13,19 +13,77 @@
   <link rel="stylesheet" href="./assets/css/leaderboard.css" />
 </head>
 <body>
-  <main class="aegis-content">
-    <p class="section-eyebrow">Community signals</p>
-    <h1>Observer leaderboard</h1>
-    <p class="intro">A future view of streaks, image clarity, and coverage contributions from the shared demo dataset. No real observers or live observations are represented.</p>
-    <section class="your-node-panel glass" aria-labelledby="leaderboard-title">
-      <div class="your-node-heading"><div><p class="section-eyebrow">Your place in the mesh</p><h2 id="leaderboard-title">Your node</h2></div><span class="badge you-badge" id="you-badge" hidden>You</span></div>
-      <p class="your-node-empty" id="your-node-empty">No local demo registration is saved in this browser yet. <a href="./register.html">Become a node</a> to create one.</p>
-      <div class="your-node-card" id="your-node-card" hidden>
-        <div class="your-node-identity"><span class="node-avatar" aria-hidden="true">N</span><div><strong id="your-callsign"></strong><span id="your-node-id"></span></div></div>
-        <dl class="your-node-details"><div><dt>Sector</dt><dd id="your-sector"></dd></div><div><dt>Nearest town</dt><dd id="your-town"></dd></div><div><dt>Equipment</dt><dd id="your-equipment"></dd></div></dl>
+  <main class="aegis-content leaderboard-page">
+    <header class="leaderboard-hero">
+      <p class="section-eyebrow">GAMIFIED LEADERBOARD</p>
+      <h1>Top Nodes of the Mesh</h1>
+      <p class="intro">A snapshot of simulated contributor streaks, frame clarity, and regional coverage. These rankings use the project demo dataset—not real observers or live observations.</p>
+    </header>
+
+    <section class="kpi-grid" aria-label="Mesh summary statistics">
+      <article class="kpi-card glass"><span class="kpi-label">ACTIVE NODES</span><strong data-kpi="activeNodes" data-count="0">—</strong><span class="kpi-foot">simulated online nodes</span></article>
+      <article class="kpi-card glass"><span class="kpi-label">ACCEPTED FRAMES</span><strong data-kpi="acceptedFrames" data-count="0">—</strong><span class="kpi-foot">within the demo 4-day window</span></article>
+      <article class="kpi-card glass"><span class="kpi-label">BLIND SPOTS FILLED</span><strong data-kpi="blindSpots" data-count="0">—</strong><span class="kpi-foot">simulated regional contributions</span></article>
+      <article class="kpi-card glass"><span class="kpi-label">AVG. CLARITY SCORE</span><strong data-kpi="avgClarity" data-count="0" data-decimals="1">—</strong><span class="kpi-foot">across all simulated nodes</span></article>
+    </section>
+
+    <section class="leaderboard-section" aria-labelledby="podium-title">
+      <div class="section-title-row"><div><p class="section-eyebrow">THE LEADING EDGE</p><h2 id="podium-title">Mesh podium</h2></div><span class="demo-label">SIMULATED DEMO DATA</span></div>
+      <div class="podium-grid" id="podium" aria-live="polite"></div>
+    </section>
+
+    <section class="leaderboard-section rankings-section" aria-labelledby="rankings-title">
+      <div class="section-title-row ranking-title-row"><div><p class="section-eyebrow">NODE RANKINGS</p><h2 id="rankings-title">Every node, in context</h2></div><span class="demo-label">SIMULATED DEMO DATA</span></div>
+      <div class="ranking-toolbar glass">
+        <div class="ranking-toolbar-top">
+          <label class="rank-search"><span class="visually-hidden">Search by callsign</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg><input class="input" id="node-search" type="search" placeholder="Search callsign or sector" autocomplete="off" /></label>
+          <div class="period-toggle" role="group" aria-label="Ranking period"><button type="button" data-period="week" aria-pressed="true">This week</button><button type="button" data-period="all" aria-pressed="false">All time</button></div>
+          <button class="btn-ghost scroll-to-me" id="scroll-to-me" type="button" hidden>Find my node</button>
+        </div>
+        <div class="sector-filter-wrap"><span class="filter-label">Sector</span><div class="sector-filters" id="sector-filters" role="group" aria-label="Filter rankings by sector"></div></div>
       </div>
-      <p class="leaderboard-honesty">Your local node is highlighted as <strong>You</strong>. It is not assigned a contribution score; all other rankings remain simulated demo data.</p>
-      <p class="leaderboard-method">Demo rankings use the shared clarity, streak, and blind-spot coverage scoring function in <code>assets/js/data.js</code>.</p>
+      <p class="ranking-count" id="ranking-count" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="ranking-table-wrap">
+        <table class="ranking-table" aria-describedby="table-note">
+          <caption class="visually-hidden">Sortable leaderboard of simulated AEGIS contributor nodes</caption>
+          <thead><tr>
+            <th scope="col" data-column="rank" aria-sort="none"><button class="sort-button" type="button" data-sort="rank">Rank <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="callsign" aria-sort="none"><button class="sort-button" type="button" data-sort="callsign">Callsign <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="sector" aria-sort="none"><button class="sort-button" type="button" data-sort="sector">Sector <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="streakDays" aria-sort="none"><button class="sort-button" type="button" data-sort="streakDays">Streak <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="clarityScore" aria-sort="none"><button class="sort-button" type="button" data-sort="clarityScore">Clarity <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="blindSpotsFilled" aria-sort="none"><button class="sort-button" type="button" data-sort="blindSpotsFilled">Blind spots <span aria-hidden="true"></span></button></th>
+            <th scope="col" data-column="totalScore" aria-sort="descending"><button class="sort-button" type="button" data-sort="totalScore">Total score <span aria-hidden="true">↓</span></button></th>
+            <th scope="col" data-column="trendDelta" aria-sort="none"><button class="sort-button" type="button" data-sort="trendDelta">Trend <span aria-hidden="true"></span></button></th>
+          </tr></thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+      <div class="ranking-empty glass" id="ranking-empty" hidden><strong>No nodes match those filters.</strong><span>Try another callsign or sector.</span></div>
+      <p class="table-note" id="table-note">Streak, clarity, and coverage values are simulated from the shared deterministic dataset. A locally registered node appears as “You” without an invented score.</p>
+      <nav class="pagination" aria-label="Leaderboard pages"><span id="page-status" aria-live="polite"></span><div><button class="btn-ghost" id="page-previous" type="button" aria-label="Previous page">Previous</button><button class="btn-ghost" id="page-next" type="button" aria-label="Next page">Next</button></div></nav>
+    </section>
+
+    <section class="leaderboard-section" aria-labelledby="scoring-title">
+      <div class="section-title-row"><div><p class="section-eyebrow">HOW THE SCORE WORKS</p><h2 id="scoring-title">A balanced contribution score</h2></div></div>
+      <div class="scoring-panel glass"><p class="score-summary">Each node&apos;s total score combines <strong>50% dark-sky clarity</strong>, <strong>30% streak consistency</strong>, and <strong>20% blind-spot coverage</strong>. For fair comparisons, streaks cap at 30 days and coverage credits cap at 10 filled blind spots.</p><div class="weight-grid"><article><span class="weight-number">50%</span><strong>Dark-sky clarity</strong><p>How clear and usable the contributed frames are.</p></article><article><span class="weight-number">30%</span><strong>Streak consistency</strong><p>Regular participation, capped at a 30-day streak.</p></article><article><span class="weight-number">20%</span><strong>Blind spots filled</strong><p>Coverage beyond well-observed regions, capped at 10.</p></article></div><p class="weight-note"><strong>Why these weights?</strong> They are tunable design choices for this concept, not a validated measure of scientific value.</p></div>
+    </section>
+
+    <section class="leaderboard-section" aria-labelledby="achievements-title">
+      <div class="section-title-row"><div><p class="section-eyebrow">MILESTONES</p><h2 id="achievements-title">Earned in the demo mesh</h2></div></div>
+      <div class="achievement-grid" id="achievements"></div>
+    </section>
+
+    <section class="leaderboard-section" aria-labelledby="sector-health-title">
+      <div class="section-title-row"><div><p class="section-eyebrow">REGIONAL COVERAGE</p><h2 id="sector-health-title">Sector health</h2><p class="section-subtitle">Average simulated clarity and node count by observation sector.</p></div></div>
+      <div class="sector-health glass" id="sector-health"></div>
+    </section>
+
+    <section class="your-node-panel glass" aria-labelledby="your-node-title">
+      <div class="your-node-heading"><div><p class="section-eyebrow">YOUR PLACE IN THE MESH</p><h2 id="your-node-title">Your node</h2></div><span class="badge you-badge" id="you-badge" hidden>You</span></div>
+      <p class="your-node-empty" id="your-node-empty">No local demo registration is saved in this browser yet. <a href="./register.html">Become a node</a> to create one.</p>
+      <div class="your-node-card" id="your-node-card" hidden><div class="your-node-identity"><span class="node-avatar" aria-hidden="true">N</span><div><strong id="your-callsign"></strong><span id="your-node-id"></span></div></div><dl class="your-node-details"><div><dt>Sector</dt><dd id="your-sector"></dd></div><div><dt>Nearest town</dt><dd id="your-town"></dd></div><div><dt>Equipment</dt><dd id="your-equipment"></dd></div></dl></div>
+      <p class="leaderboard-honesty">A locally saved node is highlighted as <strong>You</strong> in the rankings. Its contribution score stays blank until real contribution data exists; other entries are simulated.</p>
     </section>
   </main>
   <script type="module" src="./assets/js/nav.js"></script>

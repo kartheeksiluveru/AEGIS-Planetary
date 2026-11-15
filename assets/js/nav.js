@@ -3,6 +3,7 @@ const links = [
   ['Submissions', './submissions.html'],
   ['Join', './register.html'],
   ['How It Works', './how-it-works.html'],
+  ['NASA Data Hub', './nasa-hub.html'],
   ['Compare', './compare.html'],
   ['Leaderboard', './leaderboard.html']
 ];
@@ -29,7 +30,7 @@ document.body.insertAdjacentElement('afterbegin', header);
 const main = document.querySelector('main');
 const footer = document.createElement('footer');
 footer.className = 'aegis-footer';
-footer.innerHTML = '<span>TEAM HELIOS-01 · NASA SPACE APPS CHALLENGE</span><span class="aegis-demo-pill">SIMULATED DEMO DATA</span>';
+footer.innerHTML = `<span>TEAM HELIOS-01 · NASA SPACE APPS CHALLENGE</span><span class="aegis-demo-pill">${location.pathname.endsWith('/nasa-hub.html') ? 'LIVE SOURCES · ESTIMATES LABELED' : 'SIMULATED DEMO DATA'}</span>`;
 if (main) main.insertAdjacentElement('afterend', footer);
 else document.body.append(footer);
 

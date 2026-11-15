@@ -13,6 +13,13 @@
   <link rel="stylesheet" href="./assets/css/how-it-works.css" />
 </head>
 <body>
+  <canvas class="aegis-pipeline-canvas" aria-hidden="true"></canvas>
+  <div class="aegis-pipeline-fallback" aria-hidden="true">
+    <div class="pipeline-earth"><span class="earth-longitude"></span><span class="earth-latitude"></span></div>
+    <span class="pipeline-orbit orbit-a"></span><span class="pipeline-orbit orbit-b"></span><span class="pipeline-orbit orbit-c"></span>
+    <span class="pipeline-node node-a"></span><span class="pipeline-node node-b"></span><span class="pipeline-node node-c"></span>
+    <span class="pipeline-data data-a"></span><span class="pipeline-data data-b"></span><span class="pipeline-data data-c"></span>
+  </div>
   <main class="aegis-content how-page">
     <header class="how-hero" id="top">
       <p class="section-eyebrow">ARCHITECTURE</p>
@@ -134,6 +141,7 @@
   </main>
   <script type="module" src="./assets/js/nav.js"></script>
   <script type="module" src="./assets/js/stars.js"></script>
+  <script type="module" src="./assets/js/pipeline-background.js"></script>
   <script type="module" src="./assets/js/how-it-works.js"></script>
 </body>
 </html>

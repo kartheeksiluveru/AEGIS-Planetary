@@ -10,6 +10,7 @@ let eventLayer = null;
 let availableLayers = [];
 let nasaSnapshot = false;
 let cmrSnapshot = false;
+let cmrSearchId = 0;
 let observatorySnapshot = false;
 let selectedLocation = null;
 let tileErrorRetries = 0;
@@ -19,8 +20,6 @@ let mapLayerDate = yesterdayUTC;
 function setSourceStatus(id, status, { latencyMs, timestamp, detail } = {}) {
   const card = $(`#health-${id}`);
   const registryRow = $(`#registry-${id}`);
-  const dot = card?.querySelector('.health-dot');
-  if (dot) dot.dataset.status = status;
   const statusText = status === 'live' ? 'Live' : status === 'degraded' ? 'Degraded' : status === 'offline' ? 'Offline' : 'Cached / reference';
   const meta = card?.querySelector('.health-meta');
   if (meta) {
@@ -30,15 +29,15 @@ function setSourceStatus(id, status, { latencyMs, timestamp, detail } = {}) {
   }
   const label = registryRow?.querySelector('.registry-status');
   if (label) {
-    label.innerHTML = `<span class="status-label"><span class="health-dot" data-status="${esc(status)}"></span>${esc(statusText)}</span>`;
+    label.innerHTML = `<span class="status-label" data-status="${esc(status)}">${esc(statusText)}</span>`;
   }
 }
 
 function buildHealthBoard() {
   const grid = $('#health-grid');
   const rows = $('#registry-body');
-  grid.innerHTML = SOURCES.sources.map((source) => `<article class="health-card glass" id="health-${esc(source.id)}"><div class="health-top"><span class="health-dot" data-status="${esc(source.status)}" aria-hidden="true"></span><h3>${esc(source.name)}</h3></div><div class="health-meta"><span><strong>${esc(source.status === 'cached' ? 'Reference only' : 'Checking')}</strong></span><span>Latency —</span><span>${esc(source.status === 'cached' ? 'Curated link' : 'Waiting')}</span></div><a class="health-open" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">Open at source</a></article>`).join('');
-  rows.innerHTML = SOURCES.sources.map((source) => `<tr id="registry-${esc(source.id)}"><th scope="row"><a href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a></th><td class="registry-endpoint">${esc(source.endpoint)}</td><td>${esc(source.authNeeded)}</td><td>${esc(source.rateLimit)}</td><td>${esc(source.cacheTtl)}</td><td>${esc(source.accessMethod)}</td><td class="registry-status"><span class="status-label"><span class="health-dot" data-status="${esc(source.status)}"></span>${esc(source.status === 'cached' ? 'Cached / reference' : 'Checking')}</span></td></tr>`).join('');
+  grid.innerHTML = SOURCES.sources.map((source) => `<article class="health-card glass" id="health-${esc(source.id)}"><div class="health-top"><img class="nasa-logo" src="${esc(SOURCES.urls.nasaLogo)}" alt="" aria-hidden="true" /><span class="nasa-brand-name">NASA</span><h3>${esc(source.name.replace(/^NASA\\s*/, ''))}</h3></div><div class="health-meta"><span><strong>${esc(source.status === 'cached' ? 'Reference only' : 'Checking')}</strong></span><span>Latency —</span><span>${esc(source.status === 'cached' ? 'Curated link' : 'Waiting')}</span></div><a class="health-open" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">Open at source</a></article>`).join('');
+  rows.innerHTML = SOURCES.sources.map((source) => `<tr id="registry-${esc(source.id)}"><th scope="row"><a class="registry-source-link" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer"><img class="nasa-logo" src="${esc(SOURCES.urls.nasaLogo)}" alt="" aria-hidden="true" /><span class="nasa-brand-name">NASA</span><span>${esc(source.name.replace(/^NASA\\s*/, ''))}</span></a></th><td class="registry-endpoint">${esc(source.endpoint)}</td><td>${esc(source.authNeeded)}</td><td>${esc(source.rateLimit)}</td><td>${esc(source.cacheTtl)}</td><td>${esc(source.accessMethod)}</td><td class="registry-status"><span class="status-label" data-status="${esc(source.status)}">${esc(source.status === 'cached' ? 'Cached / reference' : 'Checking')}</span></td></tr>`).join('');
 }
 
 async function readFallback(name) {
@@ -198,6 +197,7 @@ async function loadCapabilities() {
   if (!choices.length) {
     select.innerHTML = '<option value="">GIBS layers unavailable</option>';
     select.disabled = true;
+    $('#map-instructions').innerHTML = `${result.snapshot ? '<span class="snapshot-badge">CACHED SNAPSHOT</span> ' : ''}GIBS layer discovery is unavailable, so no current imagery layer can be shown. The map location control remains available.`;
     return result;
   }
   select.innerHTML = choices.map((layer) => `<option value="${esc(layer.id)}">${esc(layer.title)}${layer.kind === 'night-lights' ? ' · static' : ''}</option>`).join('');
@@ -406,34 +406,58 @@ function renderCollections(payload) {
     host.innerHTML = `<div class="empty-message">${snapshotBadge}No collection records are available in this response. <a href="${esc(earthdataLink($('#dataset-query').value))}" target="_blank" rel="noopener noreferrer">Continue in Earthdata Search</a>.</div>`;
     return;
   }
-  host.innerHTML = items.map((item) => `<article class="dataset-result">${snapshotBadge}<div class="dataset-result-top"><h3>${esc(item.title)}</h3><a class="text-link" href="${esc(item.collectionUrl || earthdataLink(item.shortName))}" target="_blank" rel="noopener noreferrer">Open at source</a></div><dl><div><dt>Short name</dt><dd>${esc(item.shortName)}</dd></div><div><dt>Version</dt><dd>${esc(item.version)}</dd></div><div><dt>Provider</dt><dd>${esc(item.provider)}</dd></div><div><dt>Temporal range</dt><dd>${esc(item.temporal)}</dd></div><div><dt>Granules · map bounds · last 4 days</dt><dd>${item.granuleCount === null ? 'Count unavailable' : esc(item.granuleCount)}</dd></div><div><dt>DOI</dt><dd>${item.doi ? `<a href="${esc(item.doi)}" target="_blank" rel="noopener noreferrer">${esc(item.doi)}</a>` : 'Not supplied'}</dd></div></dl></article>`).join('');
+  host.innerHTML = items.map((item) => `<article class="dataset-result">${snapshotBadge}<div class="dataset-result-top"><h3>${esc(item.title)}</h3><a class="text-link" href="${esc(item.collectionUrl || earthdataLink(item.shortName))}" target="_blank" rel="noopener noreferrer">Open at source</a></div><dl><div><dt>Short name</dt><dd>${esc(item.shortName)}</dd></div><div><dt>Version</dt><dd>${esc(item.version)}</dd></div><div><dt>Provider</dt><dd>${esc(item.provider)}</dd></div><div><dt>Temporal range</dt><dd>${esc(item.temporal)}</dd></div><div><dt>Granules · map bounds · last 4 days</dt><dd data-granule-id="${esc(item.conceptId)}">${item.granuleCount === null ? (cmrSnapshot ? 'Unavailable in snapshot' : 'Loading…') : esc(item.granuleCount)}</dd></div><div><dt>DOI</dt><dd>${item.doi ? `<a href="${esc(item.doi)}" target="_blank" rel="noopener noreferrer">${esc(item.doi)}</a>` : 'Not supplied'}</dd></div></dl></article>`).join('');
+}
+
+async function loadGranuleCounts(payload, bounds, startDate, endDate, searchId) {
+  const ids = (payload.data?.items || []).map((item) => item.conceptId).filter(Boolean);
+  if (!ids.length) return;
+  const params = new URLSearchParams({ mode: 'granules', ids: ids.join(','), bbox: bounds, startDate, endDate });
+  try {
+    const response = await fetch(`${SOURCES.urls.apiCmr}?${params}`);
+    const result = await response.json();
+    if (!response.ok || !result.ok || searchId !== cmrSearchId) return;
+    const counts = new Map((result.data?.granules || []).map((item) => [item.conceptId, item.count]));
+    document.querySelectorAll('[data-granule-id]').forEach((cell) => {
+      const count = counts.get(cell.dataset.granuleId);
+      cell.textContent = Number.isFinite(count) ? count.toLocaleString() : 'Count unavailable';
+    });
+  } catch {
+    if (searchId !== cmrSearchId) return;
+    document.querySelectorAll('[data-granule-id]').forEach((cell) => { cell.textContent = 'Count unavailable'; });
+  }
 }
 
 async function searchDatasets(query) {
+  const searchId = ++cmrSearchId;
   const q = query.trim() || 'MODIS cloud mask';
+  const bounds = map?.getBounds();
+  const bbox = bounds ? [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].map((value) => value.toFixed(4)).join(',') : '-180,-85,180,85';
+  const startDate = dateDaysBefore(todayUTC, 3);
   $('#dataset-query').value = q;
   $('#dataset-results').setAttribute('aria-busy', 'true');
   $('#dataset-results').innerHTML = '<div class="dataset-skeleton skeleton"></div><div class="dataset-skeleton skeleton"></div>';
   $('#dataset-summary').textContent = `Searching NASA CMR for “${q}”…`;
   try {
-    const bbox = map?.getBounds();
-    const bounds = bbox ? [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()].map((value) => value.toFixed(4)).join(',') : '-180,-85,180,85';
-    const params = new URLSearchParams({ q, bbox: bounds, startDate: dateDaysBefore(todayUTC, 3), endDate: todayUTC });
+    const params = new URLSearchParams({ q });
     const response = await fetch(`${SOURCES.urls.apiCmr}?${params}`);
     const payload = await response.json();
+    if (searchId !== cmrSearchId) return;
     if (!response.ok || !payload.ok) throw new Error(payload.error || 'NASA CMR is temporarily unavailable.');
     cmrSnapshot = false;
     renderCollections(payload);
-    $('#dataset-summary').textContent = `${payload.data?.collectionHits ?? payload.data?.items?.length ?? 0} matching collections · granule counts scoped to current map bounds and the last 4 days.`;
+    $('#dataset-summary').textContent = `${payload.data?.collectionHits ?? payload.data?.items?.length ?? 0} matching collections · results appear first; granule counts load in the background.`;
     setSourceStatus('cmr', 'live', { latencyMs: payload.latencyMs, timestamp: payload.fetchedAt });
+    void loadGranuleCounts(payload, bbox, startDate, todayUTC, searchId);
   } catch {
+    if (searchId !== cmrSearchId) return;
     const payload = await readFallback('cmr');
     cmrSnapshot = true;
     renderCollections(payload);
     $('#dataset-summary').textContent = 'NASA CMR is temporarily unavailable. Showing bundled collection metadata where available.';
     setSourceStatus('cmr', 'cached', { timestamp: payload.fetchedAt });
   } finally {
-    $('#dataset-results').setAttribute('aria-busy', 'false');
+    if (searchId === cmrSearchId) $('#dataset-results').setAttribute('aria-busy', 'false');
   }
 }
 

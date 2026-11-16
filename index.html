@@ -24,6 +24,14 @@
     .searchbar,.specs,.globe-badge{border:1px solid rgba(190,219,255,.18);background:linear-gradient(145deg,rgba(29,43,78,.68),rgba(10,17,39,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 52px rgba(1,5,18,.24);backdrop-filter:saturate(145%) blur(20px);-webkit-backdrop-filter:saturate(145%) blur(20px)}
     .tile{border:1px solid rgba(190,219,255,.13);background:linear-gradient(145deg,rgba(30,43,76,.56),rgba(11,18,42,.7));box-shadow:inset 0 1px 0 rgba(255,255,255,.045);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
     .globe-badge{border-radius:999px}
+    .location-photo{display:grid;grid-template-columns:minmax(105px,34%) minmax(0,1fr);gap:12px;align-items:center;margin:13px 0 14px;padding:8px;border:1px solid rgba(190,219,255,.13);border-radius:12px;background:rgba(7,13,31,.56)}
+    .location-photo[hidden]{display:none}
+    .location-photo img{display:block;width:100%;height:84px;object-fit:cover;border-radius:7px;background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(245,165,36,.08))}
+    .location-photo figcaption{display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--muted);font-size:10px;line-height:1.45}
+    .location-photo figcaption span{font-weight:600;color:var(--ink)}
+    .location-photo a{color:#82d8ff;text-decoration:none;font-size:9px}
+    .location-photo a:hover{text-decoration:underline}
+    @media(max-width:380px){.location-photo{grid-template-columns:100px minmax(0,1fr);gap:9px}.location-photo img{height:74px}}
   </style>
 </head>
 <body>
@@ -49,6 +57,10 @@
       <p class="inline-message" id="message" role="status" aria-live="polite"></p>
       <section class="specs" id="specsCard" aria-label="Location telemetry" aria-live="polite">
         <div class="spec-head"><div><h2 id="placeTitle">Location</h2><div class="coords"><span id="coordinates">—</span><button class="copy-coords" id="copyCoordinates" type="button" aria-label="Copy coordinates">Copy</button></div></div><button class="reset" id="resetView" type="button">Reset view</button></div>
+        <figure class="location-photo" id="locationPhoto" hidden aria-live="polite">
+          <img id="locationPhotoImage" alt="" />
+          <figcaption><span id="locationPhotoCaption"></span><a id="locationPhotoSource" target="_blank" rel="noopener noreferrer">Image source: Wikimedia Commons</a></figcaption>
+        </figure>
         <div class="tiles" id="tiles"></div>
         <p class="dayline" id="dayline">Local daylight: <span>n/a</span></p>
         <p class="data-note">Data: OpenStreetMap, Open-Meteo · Moon phase calculated locally</p>
@@ -93,12 +105,43 @@
   const $ = (selector) => document.querySelector(selector);
   const input = $('#placeSearch'), suggestionBox = $('#suggestions'), message = $('#message'), card = $('#specsCard');
   const searchForm = $('#searchForm'), quickPicks = $('#quickPicks');
-  let Globe, gsap, globe, selected = null, cache = new Map(), searchTimer, activeIndex = -1, lastRequestAt = 0, dragTimer, localTicker;
+  let Globe, gsap, globe, selected = null, cache = new Map(), searchTimer, activeIndex = -1, lastRequestAt = 0, dragTimer, localTicker, photoRequest = 0;
   let autoRotate = !reducedMotion, renderFrame = 0;
 
   const esc = (text) => String(text ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const formatCoord = (value, positive, negative) => `${Math.abs(value).toFixed(4)}° ${value >= 0 ? positive : negative}`;
   const titleFor = (place) => [place.name, place.region && place.region !== place.name ? place.region : '', place.country].filter(Boolean).join(', ');
+
+  async function loadLocationPhoto(place) {
+    const requestId = ++photoRequest;
+    const figure = $('#locationPhoto');
+    const image = $('#locationPhotoImage');
+    figure.hidden = true;
+    image.removeAttribute('src');
+    const params = new URLSearchParams({
+      action:'query', generator:'search', gsrsearch:`filetype:bitmap ${place.name} ${place.country || place.region || ''} landmark`,
+      gsrnamespace:'6', gsrlimit:'8', prop:'imageinfo', iiprop:'url', iiurlwidth:'900', format:'json', origin:'*'
+    });
+    try {
+      const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`);
+      if (!response.ok) return;
+      const result = await response.json();
+      const page = Object.values(result.query?.pages || {}).find((candidate) => candidate.imageinfo?.[0]?.thumburl && candidate.imageinfo?.[0]?.descriptionurl);
+      const info = page?.imageinfo?.[0];
+      if (!info || requestId !== photoRequest) return;
+      const imageUrl = new URL(info.thumburl);
+      const sourceUrl = new URL(info.descriptionurl);
+      if (!['upload.wikimedia.org', 'thumb.wikimedia.org'].includes(imageUrl.hostname) || sourceUrl.hostname !== 'commons.wikimedia.org') return;
+      image.src = imageUrl.href;
+      image.alt = `${place.name}${place.country ? `, ${place.country}` : ''} — ${page.title.replace(/^File:/, '').replaceAll('_', ' ')}`;
+      image.onerror = () => { if (requestId === photoRequest) figure.hidden = true; };
+      $('#locationPhotoCaption').textContent = page.title.replace(/^File:/, '').replaceAll('_', ' ');
+      $('#locationPhotoSource').href = sourceUrl.href;
+      figure.hidden = false;
+    } catch {
+      if (requestId === photoRequest) figure.hidden = true;
+    }
+  }
 
   function tile(label, value, icon, i, accent = false) {
     return `<div class="tile" style="--i:${i}"><span class="label">${icon} &nbsp; ${label}</span><span class="value${accent ? ' accent' : ''}">${value}</span></div>`;
@@ -227,6 +270,7 @@
     closeSuggestions(); input.value = place.name; message.textContent = ''; selected = place; clearInterval(localTicker);
     $('#placeTitle').textContent = titleFor(place);
     $('#coordinates').textContent = `${formatCoord(place.lat,'N','S')}, ${formatCoord(place.lng,'E','W')}`;
+    loadLocationPhoto(place);
     card.classList.remove('visible');
     skeletonTiles();
     await Promise.all([animateTo(place), loadTelemetry(place)]);
@@ -234,7 +278,7 @@
     $('#announcement').textContent = `Showing planetary telemetry for ${titleFor(place)}.`;
   }
   function reset() {
-    selected = null; clearInterval(localTicker); card.classList.remove('visible'); closeSuggestions(); input.value = ''; message.textContent = ''; $('#tiles').innerHTML = ''; $('#dayline').innerHTML = 'Local daylight: <span>n/a</span>';
+    selected = null; photoRequest += 1; clearInterval(localTicker); card.classList.remove('visible'); $('#locationPhoto').hidden = true; closeSuggestions(); input.value = ''; message.textContent = ''; $('#tiles').innerHTML = ''; $('#dayline').innerHTML = 'Local daylight: <span>n/a</span>';
     globe.pointsData([]).ringsData([]).labelsData([]).pointOfView({ lat:12, lng:-82, altitude:2.15 }, CONFIG.animationMs);
     if (!reducedMotion) { autoRotate = true; globe.controls().autoRotate = true; }
   }
@@ -339,7 +383,7 @@
     controls.minDistance = 130;
     controls.maxDistance = 520;
     controls.autoRotate = autoRotate;
-    controls.autoRotateSpeed = .016;
+    controls.autoRotateSpeed = CONFIG.rotationDegreesPerSecond / 6;
     controls.enablePan = false;
     globe.pointOfView({ lat:12, lng:-82, altitude:2.15 }, 0);
     host.addEventListener('pointerdown', () => { controls.autoRotate = false; clearTimeout(dragTimer); });

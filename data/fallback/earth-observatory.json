@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "data": {
+    "items": [],
+    "feedUrls": [
+      "https://science.nasa.gov/feed/earth-observatory/image-of-the-day",
+      "https://science.nasa.gov/feed/earth-observatory/natural-events"
+    ]
+  },
+  "source": "NASA Earth Observatory RSS snapshot",
+  "fetchedAt": "2026-11-16T00:00:00.000Z",
+  "cached": true,
+  "error": "No article records are bundled; open the current official feeds for live stories."
+}

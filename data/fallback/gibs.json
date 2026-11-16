@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "data": { "layers": [], "layerCount": 0 },
+  "source": "NASA GIBS GetCapabilities snapshot",
+  "fetchedAt": "2026-11-16T00:00:00.000Z",
+  "cached": true,
+  "error": "Live layer capabilities are unavailable; no unverified layer IDs are included in this snapshot."
+}

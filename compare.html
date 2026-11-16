@@ -4,21 +4,126 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A0F24" />
-  <meta name="description" content="Compare the AEGIS mesh concept with common observation constraints." />
-  <title>Compare — AEGIS</title>
+  <meta name="description" content="Compare simulated AEGIS observing frames over time, inspect pixel-derived changes, and review transparent alerts and outlooks." />
+  <title>Change Detection — AEGIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/theme.css" />
+  <link rel="stylesheet" href="./assets/css/compare.css" />
 </head>
 <body>
-  <main class="aegis-content">
-    <p class="section-eyebrow">Network model</p>
-    <h1>Compare approaches</h1>
-    <p class="intro">A future comparison of a distributed observer mesh and other observation approaches, with transparent assumptions and clearly identified demo values.</p>
-    <section class="stub-panel glass" aria-labelledby="compare-title"><h2 id="compare-title">Designed to complement</h2><p>AEGIS is a concept for filling local continuity gaps with distributed observations. It is not a replacement for calibrated orbital instruments, and this placeholder makes no performance or accuracy claims.</p></section>
+  <main class="aegis-content compare-page">
+    <header class="compare-intro">
+      <p class="section-eyebrow">AEGIS OBSERVING TOOL</p>
+      <h1>Change detection</h1>
+      <p class="intro">Choose a region, night, and observing window. Compare a historical baseline with the latest matching frame, then inspect what changed and how confident the interpretation is.</p>
+      <span class="badge simulated-badge">SIMULATED DEMO DATA</span>
+    </header>
+
+    <section class="selection-panel glass" aria-labelledby="selection-title">
+      <div class="panel-heading"><div><p class="section-eyebrow">1 / SELECT OBSERVATIONS</p><h2 id="selection-title">Build a comparison</h2></div><span class="selection-hint">30-night archive · 4 local-time windows</span></div>
+      <form id="selection-form">
+        <div class="selection-grid">
+          <label>Region<select class="input" id="region-select" name="sector"></select></label>
+          <label>Baseline date<input class="input" id="baseline-date" name="date" type="date" required /></label>
+          <label>Time of night<select class="input" id="time-slot" name="slot"></select></label>
+          <label class="node-toggle"><input id="same-node" name="sameNode" type="checkbox" /><span>Same node for both frames</span></label>
+          <label>Node<select class="input" id="node-select" name="node" disabled></select></label>
+        </div>
+        <div class="quick-presets" role="group" aria-label="Baseline date presets">
+          <span>Quick select</span>
+          <button class="chip preset-button" type="button" data-days-ago="1">Yesterday</button>
+          <button class="chip preset-button" type="button" data-days-ago="7">7 days ago</button>
+          <button class="chip preset-button" type="button" data-days-ago="30">30 days ago</button>
+        </div>
+        <div id="selection-summary" class="selection-summary" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="selection-empty" class="empty-selection" role="status" hidden></div>
+        <div class="selection-actions">
+          <button id="compare-button" class="btn-primary" type="submit">Compare frames</button>
+          <button id="swap-button" class="btn-ghost" type="button">Swap viewer sides</button>
+          <button id="reset-button" class="btn-ghost" type="button">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="compare-progress" class="compare-progress" role="status" aria-live="polite" hidden><span class="progress-spinner" aria-hidden="true"></span><span>Rendering both frames and measuring pixel changes…</span></div>
+
+    <section id="results" class="results-section" aria-labelledby="results-title" hidden>
+      <header class="results-summary glass">
+        <div><p class="section-eyebrow">COMPARISON SUMMARY</p><h2 id="results-title" tabindex="-1">What changed</h2><p id="result-summary" aria-live="polite" aria-atomic="true"></p></div>
+        <div class="summary-side"><span class="badge simulated-badge">SIMULATED DEMO DATA</span><span id="result-period" class="selection-hint"></span></div>
+      </header>
+
+      <section class="result-block glass" aria-labelledby="conditions-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">COMPARABILITY CHECK</p><h2 id="conditions-title">How comparable are these frames?</h2></div></div>
+        <div id="condition-list" class="condition-list"></div>
+        <p id="condition-warning" class="condition-warning" role="note" hidden>These frames were taken under different conditions, so some differences may come from the equipment or timing, not the atmosphere.</p>
+      </section>
+
+      <section class="result-block viewer-block glass" aria-labelledby="viewer-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">RENDERED FRAME REVIEW</p><h2 id="viewer-title">Compare the images</h2></div><p id="frame-labels" class="frame-labels"></p></div>
+        <div class="viewer-tabs" role="tablist" aria-label="Image comparison view">
+          <button id="tab-slider" class="viewer-tab" type="button" role="tab" aria-selected="true" aria-controls="view-slider" tabindex="0" data-view="slider">Slider</button>
+          <button id="tab-side" class="viewer-tab" type="button" role="tab" aria-selected="false" aria-controls="view-side" tabindex="-1" data-view="side">Side by side</button>
+          <button id="tab-difference" class="viewer-tab" type="button" role="tab" aria-selected="false" aria-controls="view-difference" tabindex="-1" data-view="difference">Difference map</button>
+        </div>
+        <div id="view-slider" class="viewer-panel" role="tabpanel" aria-labelledby="tab-slider">
+          <div class="slider-view" id="slider-view">
+            <canvas id="slider-baseline" width="320" height="200" aria-label="Baseline simulated sky frame"></canvas>
+            <canvas id="slider-latest" width="320" height="200" aria-label="Latest simulated sky frame"></canvas>
+            <span class="viewer-label before-label">Baseline</span><span class="viewer-label after-label">Latest</span>
+            <span id="slider-divider" class="slider-divider" aria-hidden="true"></span>
+          </div>
+          <label class="range-label" for="slider-range">Reveal latest frame <span id="slider-value">50%</span></label>
+          <input id="slider-range" type="range" min="0" max="100" value="50" aria-label="Before and after image slider" aria-valuetext="50 percent latest frame visible" />
+        </div>
+        <div id="view-side" class="viewer-panel side-view" role="tabpanel" aria-labelledby="tab-side" hidden>
+          <figure><canvas id="side-baseline" width="320" height="200" aria-label="Baseline simulated sky frame"></canvas><figcaption id="side-baseline-caption"></figcaption></figure>
+          <figure><canvas id="side-latest" width="320" height="200" aria-label="Latest simulated sky frame"></canvas><figcaption id="side-latest-caption"></figcaption></figure>
+        </div>
+        <div id="view-difference" class="viewer-panel difference-view" role="tabpanel" aria-labelledby="tab-difference" hidden>
+          <div class="difference-stack"><canvas id="difference-background" width="320" height="200" aria-label="Baseline frame beneath the difference overlay"></canvas><canvas id="difference-map" width="320" height="200" aria-label="Heat map of per-pixel change between simulated frames"></canvas></div>
+          <div class="difference-controls"><div class="heat-legend"><span>Less change</span><span class="legend-gradient" aria-hidden="true"></span><span>More change</span></div><label class="range-label" for="difference-opacity">Heat-map opacity <span id="difference-opacity-value">75%</span></label><input id="difference-opacity" type="range" min="10" max="100" value="75" /></div>
+        </div>
+        <p class="viewer-note">Illustrative synthetic frames; cloud, sky background, star peaks, transparency, night-light proxy, lunar disc, and status are measured from the rendered 320 × 200 canvas. They are not NASA imagery.</p>
+      </section>
+
+      <section class="result-block glass" aria-labelledby="metrics-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">MEASURED PIXEL & FRAME METRICS</p><h2 id="metrics-title">Differences</h2></div><label class="filter-toggle"><input id="notable-filter" type="checkbox" /> Show only notable and major</label></div>
+        <div id="metric-table-wrap" class="metric-table-wrap"></div>
+        <div id="metric-cards" class="metric-cards"></div>
+      </section>
+
+      <section class="result-block glass" aria-labelledby="alerts-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">RULE-BASED SIGNALS</p><h2 id="alerts-title">Alerts</h2></div><span id="alert-count" class="badge"></span></div>
+        <div id="alerts-list" class="alerts-list" aria-live="polite"></div>
+      </section>
+
+      <section class="result-block glass" aria-labelledby="outlook-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">RECENT TREND</p><h2 id="outlook-title">Observing outlook</h2></div><span class="selection-hint">24 / 48 / 72 hours</span></div>
+        <p class="method-note">A linear trend blended with an exponentially weighted average from the last 7 nights. Confidence reflects recent variability.</p>
+        <div id="forecast-summary" class="forecast-summary"></div>
+        <canvas id="forecast-chart" width="720" height="220" aria-label="Recent cloud and star-count trend with projected observing quality"></canvas>
+        <p class="fine-print">Heuristic trend projection from simulated data. Not a weather forecast.</p>
+      </section>
+
+      <section class="result-block glass" aria-labelledby="reasons-title">
+        <div class="section-title-row"><div><p class="section-eyebrow">EVIDENCE-BASED HYPOTHESES</p><h2 id="reasons-title">Possible reasons</h2></div></div>
+        <p class="method-note">Ranked possibilities, not confirmed causes. Use the verification steps before drawing conclusions.</p>
+        <ol id="reasons-list" class="reasons-list"></ol>
+      </section>
+
+      <span id="copy-feedback" class="sr-only" role="status" aria-live="polite"></span>
+      <div class="result-actions" aria-label="Comparison actions">
+        <button id="copy-summary" class="btn-ghost" type="button">Copy summary</button>
+        <button id="download-report" class="btn-ghost" type="button">Download report / Save as PDF</button>
+        <a id="worldview-link" class="btn-primary" href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">Open in NASA Worldview</a>
+      </div>
+    </section>
   </main>
   <script type="module" src="./assets/js/nav.js"></script>
   <script type="module" src="./assets/js/stars.js"></script>
+  <script type="module" src="./assets/js/compare.js"></script>
 </body>
 </html>

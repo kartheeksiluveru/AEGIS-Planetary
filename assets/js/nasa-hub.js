@@ -10,6 +10,7 @@ let eventLayer = null;
 let availableLayers = [];
 let nasaSnapshot = false;
 let cmrSnapshot = false;
+let cmrSearchId = 0;
 let observatorySnapshot = false;
 let selectedLocation = null;
 let tileErrorRetries = 0;
@@ -406,34 +407,58 @@ function renderCollections(payload) {
     host.innerHTML = `<div class="empty-message">${snapshotBadge}No collection records are available in this response. <a href="${esc(earthdataLink($('#dataset-query').value))}" target="_blank" rel="noopener noreferrer">Continue in Earthdata Search</a>.</div>`;
     return;
   }
-  host.innerHTML = items.map((item) => `<article class="dataset-result">${snapshotBadge}<div class="dataset-result-top"><h3>${esc(item.title)}</h3><a class="text-link" href="${esc(item.collectionUrl || earthdataLink(item.shortName))}" target="_blank" rel="noopener noreferrer">Open at source</a></div><dl><div><dt>Short name</dt><dd>${esc(item.shortName)}</dd></div><div><dt>Version</dt><dd>${esc(item.version)}</dd></div><div><dt>Provider</dt><dd>${esc(item.provider)}</dd></div><div><dt>Temporal range</dt><dd>${esc(item.temporal)}</dd></div><div><dt>Granules · map bounds · last 4 days</dt><dd>${item.granuleCount === null ? 'Count unavailable' : esc(item.granuleCount)}</dd></div><div><dt>DOI</dt><dd>${item.doi ? `<a href="${esc(item.doi)}" target="_blank" rel="noopener noreferrer">${esc(item.doi)}</a>` : 'Not supplied'}</dd></div></dl></article>`).join('');
+  host.innerHTML = items.map((item) => `<article class="dataset-result">${snapshotBadge}<div class="dataset-result-top"><h3>${esc(item.title)}</h3><a class="text-link" href="${esc(item.collectionUrl || earthdataLink(item.shortName))}" target="_blank" rel="noopener noreferrer">Open at source</a></div><dl><div><dt>Short name</dt><dd>${esc(item.shortName)}</dd></div><div><dt>Version</dt><dd>${esc(item.version)}</dd></div><div><dt>Provider</dt><dd>${esc(item.provider)}</dd></div><div><dt>Temporal range</dt><dd>${esc(item.temporal)}</dd></div><div><dt>Granules · map bounds · last 4 days</dt><dd data-granule-id="${esc(item.conceptId)}">${item.granuleCount === null ? (cmrSnapshot ? 'Unavailable in snapshot' : 'Loading…') : esc(item.granuleCount)}</dd></div><div><dt>DOI</dt><dd>${item.doi ? `<a href="${esc(item.doi)}" target="_blank" rel="noopener noreferrer">${esc(item.doi)}</a>` : 'Not supplied'}</dd></div></dl></article>`).join('');
+}
+
+async function loadGranuleCounts(payload, bounds, startDate, endDate, searchId) {
+  const ids = (payload.data?.items || []).map((item) => item.conceptId).filter(Boolean);
+  if (!ids.length) return;
+  const params = new URLSearchParams({ mode: 'granules', ids: ids.join(','), bbox: bounds, startDate, endDate });
+  try {
+    const response = await fetch(`${SOURCES.urls.apiCmr}?${params}`);
+    const result = await response.json();
+    if (!response.ok || !result.ok || searchId !== cmrSearchId) return;
+    const counts = new Map((result.data?.granules || []).map((item) => [item.conceptId, item.count]));
+    document.querySelectorAll('[data-granule-id]').forEach((cell) => {
+      const count = counts.get(cell.dataset.granuleId);
+      cell.textContent = Number.isFinite(count) ? count.toLocaleString() : 'Count unavailable';
+    });
+  } catch {
+    if (searchId !== cmrSearchId) return;
+    document.querySelectorAll('[data-granule-id]').forEach((cell) => { cell.textContent = 'Count unavailable'; });
+  }
 }
 
 async function searchDatasets(query) {
+  const searchId = ++cmrSearchId;
   const q = query.trim() || 'MODIS cloud mask';
+  const bounds = map?.getBounds();
+  const bbox = bounds ? [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()].map((value) => value.toFixed(4)).join(',') : '-180,-85,180,85';
+  const startDate = dateDaysBefore(todayUTC, 3);
   $('#dataset-query').value = q;
   $('#dataset-results').setAttribute('aria-busy', 'true');
   $('#dataset-results').innerHTML = '<div class="dataset-skeleton skeleton"></div><div class="dataset-skeleton skeleton"></div>';
   $('#dataset-summary').textContent = `Searching NASA CMR for “${q}”…`;
   try {
-    const bbox = map?.getBounds();
-    const bounds = bbox ? [bbox.getWest(), bbox.getSouth(), bbox.getEast(), bbox.getNorth()].map((value) => value.toFixed(4)).join(',') : '-180,-85,180,85';
-    const params = new URLSearchParams({ q, bbox: bounds, startDate: dateDaysBefore(todayUTC, 3), endDate: todayUTC });
+    const params = new URLSearchParams({ q });
     const response = await fetch(`${SOURCES.urls.apiCmr}?${params}`);
     const payload = await response.json();
+    if (searchId !== cmrSearchId) return;
     if (!response.ok || !payload.ok) throw new Error(payload.error || 'NASA CMR is temporarily unavailable.');
     cmrSnapshot = false;
     renderCollections(payload);
-    $('#dataset-summary').textContent = `${payload.data?.collectionHits ?? payload.data?.items?.length ?? 0} matching collections · granule counts scoped to current map bounds and the last 4 days.`;
+    $('#dataset-summary').textContent = `${payload.data?.collectionHits ?? payload.data?.items?.length ?? 0} matching collections · results appear first; granule counts load in the background.`;
     setSourceStatus('cmr', 'live', { latencyMs: payload.latencyMs, timestamp: payload.fetchedAt });
+    void loadGranuleCounts(payload, bbox, startDate, todayUTC, searchId);
   } catch {
+    if (searchId !== cmrSearchId) return;
     const payload = await readFallback('cmr');
     cmrSnapshot = true;
     renderCollections(payload);
     $('#dataset-summary').textContent = 'NASA CMR is temporarily unavailable. Showing bundled collection metadata where available.';
     setSourceStatus('cmr', 'cached', { timestamp: payload.fetchedAt });
   } finally {
-    $('#dataset-results').setAttribute('aria-busy', 'false');
+    if (searchId === cmrSearchId) $('#dataset-results').setAttribute('aria-busy', 'false');
   }
 }
 

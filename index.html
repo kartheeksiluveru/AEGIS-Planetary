@@ -383,7 +383,7 @@
     controls.minDistance = 130;
     controls.maxDistance = 520;
     controls.autoRotate = autoRotate;
-    controls.autoRotateSpeed = .016;
+    controls.autoRotateSpeed = CONFIG.rotationDegreesPerSecond / 6;
     controls.enablePan = false;
     globe.pointOfView({ lat:12, lng:-82, altitude:2.15 }, 0);
     host.addEventListener('pointerdown', () => { controls.autoRotate = false; clearTimeout(dragTimer); });

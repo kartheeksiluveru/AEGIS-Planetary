@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "data": {
+    "services": {
+      "apod": {
+        "ok": false,
+        "data": {
+          "date": "2026-11-16",
+          "title": "Astronomy Picture of the Day",
+          "explanation": "The live NASA APOD service is unavailable. This bundled snapshot is a placeholder and contains no live image or current astronomy description.",
+          "media_type": "text",
+          "url": "https://apod.nasa.gov/apod/astropix.html"
+        },
+        "source": "NASA APOD snapshot"
+      },
+      "epic": { "ok": false, "data": [], "source": "NASA EPIC snapshot" },
+      "flares": { "ok": false, "data": [], "source": "NASA DONKI snapshot" },
+      "storms": { "ok": false, "data": [], "source": "NASA DONKI snapshot" },
+      "eonet": { "ok": false, "data": { "events": [] }, "source": "NASA EONET snapshot" },
+      "images": { "ok": false, "data": { "collection": { "items": [] } }, "source": "NASA Images snapshot" }
+    }
+  },
+  "source": "Bundled NASA source fallback",
+  "fetchedAt": "2026-11-16T00:00:00.000Z",
+  "cached": true,
+  "usingDemoKey": true,
+  "rateLimitRemaining": null,
+  "error": "This bundled placeholder is not live NASA data."
+}

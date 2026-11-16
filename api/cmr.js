@@ -3,17 +3,20 @@ const { send, envelope, request, cachedRequest } = require('./_shared.cjs');
 
 function parseCollection(entry) {
   const umm = entry.umm || {};
-  const temporal = umm.TemporalExtents?.[0]?.RangeDateTime || {};
-  const doi = umm.RelatedUrls?.find((item) => /doi\.org/i.test(item.URL || ''))?.URL || umm.RelatedUrls?.find((item) => item.Type === 'VIEW RELATED INFORMATION')?.URL || '';
+  const temporal = umm.TemporalExtents?.[0]?.RangeDateTimes?.[0] || umm.TemporalExtents?.[0]?.RangeDateTime || {};
+  const citation = umm.CollectionCitations?.[0] || {};
+  const doi = citation.OnlineResource?.Linkage || umm.RelatedUrls?.find((item) => /doi\.org/i.test(item.URL || ''))?.URL || umm.RelatedUrls?.find((item) => item.Type === 'VIEW RELATED INFORMATION')?.URL || '';
+  const shortName = umm.ShortName || '—';
+  const entryTitle = umm.EntryTitle || citation.Title || entry.title || 'Untitled collection';
   return {
-    title: umm.ShortName ? `${umm.ShortName}: ${umm.EntryTitle || entry.title || 'Untitled collection'}` : (umm.EntryTitle || entry.title || 'Untitled collection'),
-    shortName: umm.ShortName || '—',
-    version: umm.Version || '—',
-    provider: entry.provider_id || '—',
+    title: `${shortName !== '—' ? `${shortName}: ` : ''}${entryTitle}`,
+    shortName,
+    version: umm.Version || citation.Version || '—',
+    provider: entry.meta?.['provider-id'] || entry.provider_id || '—',
     temporal: [temporal.BeginningDateTime, temporal.EndingDateTime].filter(Boolean).join(' — ') || 'Temporal range not provided',
     doi,
-    conceptId: entry.id,
-    collectionUrl: `https://search.earthdata.nasa.gov/search?q=${encodeURIComponent(umm.ShortName || entry.title || '')}`
+    conceptId: entry.meta?.['concept-id'] || entry.id,
+    collectionUrl: `https://search.earthdata.nasa.gov/search?q=${encodeURIComponent(shortName !== '—' ? shortName : entryTitle)}`
   };
 }
 
@@ -53,7 +56,6 @@ module.exports = async function cmr(req, res) {
   const collectionUrl = new URL(urls.cmrCollections);
   collectionUrl.searchParams.set('keyword', keyword);
   collectionUrl.searchParams.set('page_size', '6');
-  collectionUrl.searchParams.set('include_facets', 'false');
   const cacheKey = `cmr:${keyword.toLowerCase()}`;
   try {
     const result = await cachedRequest(cacheKey, ttl.cmr, async () => {

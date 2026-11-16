@@ -1,6 +1,6 @@
 const cache = new Map();
 const pending = new Map();
-const DEFAULT_TIMEOUT_MS = 3500;
+const DEFAULT_TIMEOUT_MS = 8000;
 
 function send(res, statusCode, payload, maxAge = 60) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');

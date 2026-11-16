@@ -6,7 +6,7 @@ function randomFrom(seed) {
   };
 }
 
-export function drawFrame(canvas, { seed = 1, cloud = 0, glow = 0.35, size = 640 } = {}) {
+export function drawFrame(canvas, { seed = 1, cloud = 0, glow = 0.35, size = 640, starCount, transparency = 100, moonIllumination = 0, haze = 0, lightPollution = 0 } = {}) {
   if (!(canvas instanceof HTMLCanvasElement)) throw new TypeError('drawFrame expects a canvas element');
   const dimensions = typeof size === 'number' ? { width:size, height:size } : size;
   const width = Math.max(1, Math.round(dimensions.width || 640));
@@ -40,12 +40,13 @@ export function drawFrame(canvas, { seed = 1, cloud = 0, glow = 0.35, size = 640
   context.fillRect(-width * .8, -height * .35, width * 1.6, height * .7);
   context.restore();
 
-  const starCount = Math.floor(width * height / 850);
-  for (let index = 0; index < starCount; index += 1) {
+  const drawnStarCount = Number.isFinite(Number(starCount)) ? Math.max(0, Math.min(800, Math.round(Number(starCount)))) : Math.floor(width * height / 850);
+  const visibility = Math.max(0.08, Math.min(1, Number(transparency) / 100)) * (1 - Math.max(0, Math.min(100, Number(moonIllumination))) / 260);
+  for (let index = 0; index < drawnStarCount; index += 1) {
     const x = random() * width;
-    const y = random() * height * .88;
-    const radius = .25 + random() * 1.1;
-    const alpha = .25 + random() * .72;
+    const y = random() * height * .82;
+    const radius = .6 + random() * 1.05;
+    const alpha = (.35 + random() * .65) * visibility;
     context.beginPath();
     context.arc(x, y, radius, 0, Math.PI * 2);
     context.fillStyle = `rgba(${random() > .84 ? '135, 207, 245' : '232, 240, 255'}, ${alpha})`;
@@ -72,6 +73,37 @@ export function drawFrame(canvas, { seed = 1, cloud = 0, glow = 0.35, size = 640
     context.beginPath();
     context.ellipse(x, y, radiusX, radiusY, (random() - .5) * .5, 0, Math.PI * 2);
     context.fillStyle = patch;
+    context.fill();
+  }
+
+  const light = Math.max(0, Math.min(100, Number(lightPollution)));
+  if (light > 0) {
+    const horizonGlow = context.createRadialGradient(width * .5, height, 0, width * .5, height, width * .75);
+    horizonGlow.addColorStop(0, `rgba(245, 165, 36, ${light / 190})`);
+    horizonGlow.addColorStop(1, 'rgba(245, 165, 36, 0)');
+    context.fillStyle = horizonGlow;
+    context.fillRect(0, height * .58, width, height * .42);
+  }
+
+  const hazeOpacity = Math.max(0, Math.min(100, Number(haze))) / 100;
+  if (hazeOpacity > 0) {
+    context.fillStyle = `rgba(175, 187, 207, ${hazeOpacity * .32})`;
+    context.fillRect(0, 0, width, height * .84);
+  }
+
+  const moon = Math.max(0, Math.min(100, Number(moonIllumination)));
+  if (moon > 0) {
+    const moonX = width * .82;
+    const moonY = height * .2;
+    const moonRadius = Math.max(4, Math.min(14, width * .045));
+    const moonGlow = context.createRadialGradient(moonX, moonY, moonRadius * .5, moonX, moonY, moonRadius * 2.3);
+    moonGlow.addColorStop(0, `rgba(222, 232, 250, ${moon / 120})`);
+    moonGlow.addColorStop(1, 'rgba(222, 232, 250, 0)');
+    context.fillStyle = moonGlow;
+    context.fillRect(moonX - moonRadius * 2.3, moonY - moonRadius * 2.3, moonRadius * 4.6, moonRadius * 4.6);
+    context.beginPath();
+    context.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+    context.fillStyle = `rgba(222, 232, 250, ${moon / 115})`;
     context.fill();
   }
 }

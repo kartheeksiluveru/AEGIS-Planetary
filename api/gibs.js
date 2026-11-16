@@ -17,7 +17,7 @@ function parseCapabilities(xml) {
     const timeBlock = body.match(/<Dimension>[\s\S]*?<ows:Identifier>Time<\/ows:Identifier>([\s\S]*?)<\/Dimension>/);
     const defaultTime = timeBlock ? matchValue(timeBlock[1], /<Default>([^<]+)/) : '';
     const titleText = `${id} ${title}`;
-    const kind = /true\s*color/i.test(titleText) ? 'true-color' : /cloud fraction/i.test(titleText) ? 'cloud-fraction' : /black marble/i.test(titleText) ? 'night-lights' : /day.?night band.*radiance/i.test(titleText) ? 'night-radiance' : null;
+    const kind = /true\s*color/i.test(titleText) ? 'true-color' : /cloud fraction/i.test(titleText) ? 'cloud-fraction' : /day.?night band|nighttime blue\/yellow composite/i.test(titleText) ? 'night-radiance' : /black marble/i.test(titleText) ? 'night-lights' : null;
     if (!id || !matrixSet || !format || !resource || !kind) return null;
     return { id, title: title || id, matrixSet, format, template: resource[1], defaultTime, kind };
   }).filter(Boolean);
@@ -26,7 +26,7 @@ function parseCapabilities(xml) {
 
 async function capabilities() {
   return cachedRequest('gibs-capabilities-epsg3857', ttl.gibsCapabilities, async () => {
-    const upstream = await request(urls.gibsCapabilities, { kind: 'text', timeoutMs: 3500 });
+    const upstream = await request(urls.gibsCapabilities, { kind: 'text' });
     const layers = parseCapabilities(upstream.data);
     if (!layers.length) throw new Error('GIBS GetCapabilities returned no supported imagery layers.');
     return { data: { layers, layerCount: layers.length }, fetchedAt: upstream.fetchedAt, latencyMs: upstream.latencyMs, rateLimitRemaining: upstream.rateLimitRemaining };

@@ -20,8 +20,6 @@ let mapLayerDate = yesterdayUTC;
 function setSourceStatus(id, status, { latencyMs, timestamp, detail } = {}) {
   const card = $(`#health-${id}`);
   const registryRow = $(`#registry-${id}`);
-  const dot = card?.querySelector('.health-dot');
-  if (dot) dot.dataset.status = status;
   const statusText = status === 'live' ? 'Live' : status === 'degraded' ? 'Degraded' : status === 'offline' ? 'Offline' : 'Cached / reference';
   const meta = card?.querySelector('.health-meta');
   if (meta) {
@@ -31,15 +29,15 @@ function setSourceStatus(id, status, { latencyMs, timestamp, detail } = {}) {
   }
   const label = registryRow?.querySelector('.registry-status');
   if (label) {
-    label.innerHTML = `<span class="status-label"><span class="health-dot" data-status="${esc(status)}"></span>${esc(statusText)}</span>`;
+    label.innerHTML = `<span class="status-label" data-status="${esc(status)}">${esc(statusText)}</span>`;
   }
 }
 
 function buildHealthBoard() {
   const grid = $('#health-grid');
   const rows = $('#registry-body');
-  grid.innerHTML = SOURCES.sources.map((source) => `<article class="health-card glass" id="health-${esc(source.id)}"><div class="health-top"><span class="health-dot" data-status="${esc(source.status)}" aria-hidden="true"></span><h3>${esc(source.name)}</h3></div><div class="health-meta"><span><strong>${esc(source.status === 'cached' ? 'Reference only' : 'Checking')}</strong></span><span>Latency —</span><span>${esc(source.status === 'cached' ? 'Curated link' : 'Waiting')}</span></div><a class="health-open" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">Open at source</a></article>`).join('');
-  rows.innerHTML = SOURCES.sources.map((source) => `<tr id="registry-${esc(source.id)}"><th scope="row"><a href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a></th><td class="registry-endpoint">${esc(source.endpoint)}</td><td>${esc(source.authNeeded)}</td><td>${esc(source.rateLimit)}</td><td>${esc(source.cacheTtl)}</td><td>${esc(source.accessMethod)}</td><td class="registry-status"><span class="status-label"><span class="health-dot" data-status="${esc(source.status)}"></span>${esc(source.status === 'cached' ? 'Cached / reference' : 'Checking')}</span></td></tr>`).join('');
+  grid.innerHTML = SOURCES.sources.map((source) => `<article class="health-card glass" id="health-${esc(source.id)}"><div class="health-top"><img class="nasa-logo" src="${esc(SOURCES.urls.nasaLogo)}" alt="" aria-hidden="true" /><span class="nasa-brand-name">NASA</span><h3>${esc(source.name.replace(/^NASA\\s*/, ''))}</h3></div><div class="health-meta"><span><strong>${esc(source.status === 'cached' ? 'Reference only' : 'Checking')}</strong></span><span>Latency —</span><span>${esc(source.status === 'cached' ? 'Curated link' : 'Waiting')}</span></div><a class="health-open" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer">Open at source</a></article>`).join('');
+  rows.innerHTML = SOURCES.sources.map((source) => `<tr id="registry-${esc(source.id)}"><th scope="row"><a class="registry-source-link" href="${esc(source.homepage)}" target="_blank" rel="noopener noreferrer"><img class="nasa-logo" src="${esc(SOURCES.urls.nasaLogo)}" alt="" aria-hidden="true" /><span class="nasa-brand-name">NASA</span><span>${esc(source.name.replace(/^NASA\\s*/, ''))}</span></a></th><td class="registry-endpoint">${esc(source.endpoint)}</td><td>${esc(source.authNeeded)}</td><td>${esc(source.rateLimit)}</td><td>${esc(source.cacheTtl)}</td><td>${esc(source.accessMethod)}</td><td class="registry-status"><span class="status-label" data-status="${esc(source.status)}">${esc(source.status === 'cached' ? 'Cached / reference' : 'Checking')}</span></td></tr>`).join('');
 }
 
 async function readFallback(name) {
@@ -199,6 +197,7 @@ async function loadCapabilities() {
   if (!choices.length) {
     select.innerHTML = '<option value="">GIBS layers unavailable</option>';
     select.disabled = true;
+    $('#map-instructions').innerHTML = `${result.snapshot ? '<span class="snapshot-badge">CACHED SNAPSHOT</span> ' : ''}GIBS layer discovery is unavailable, so no current imagery layer can be shown. The map location control remains available.`;
     return result;
   }
   select.innerHTML = choices.map((layer) => `<option value="${esc(layer.id)}">${esc(layer.title)}${layer.kind === 'night-lights' ? ' · static' : ''}</option>`).join('');

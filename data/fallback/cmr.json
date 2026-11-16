@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "data": { "items": [], "query": "MODIS cloud mask", "collectionHits": 0 },
+  "source": "NASA Common Metadata Repository snapshot",
+  "fetchedAt": "2026-11-16T00:00:00.000Z",
+  "cached": true,
+  "error": "No collection records are bundled. Search Earthdata directly for current metadata."
+}

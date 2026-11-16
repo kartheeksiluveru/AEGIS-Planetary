@@ -4,6 +4,7 @@
   if (root) root.AEGIS_SOURCES = registry;
 })(globalThis, () => {
   const urls = {
+    nasaLogo: 'https://www.nasa.gov/wp-content/themes/nasa/assets/images/nasa-logo.svg',
     apiNasa: 'https://api.nasa.gov',
     apod: 'https://science.nasa.gov/wp-json/wp/v2/apod-basic/',
     epic: 'https://api.nasa.gov/EPIC/api/natural',
